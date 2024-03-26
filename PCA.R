@@ -54,5 +54,7 @@ ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
 
 ##Trying to determine variable contributions
 loadings(female_PCA)
+##Both of these look like theyre doing the proper thing but are not the same, maybe showing slightly different things?
 var <- get_pca_var(PC_female)
 head(var$contrib)
+print(var$contrib)
