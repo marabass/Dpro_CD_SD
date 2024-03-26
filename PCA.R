@@ -1,14 +1,16 @@
-#library
+##library
 library(tidyverse)
+##install.packages("factoextra")
+library(factoextra)
 
-#load in the data 
+##load in the data 
 DmelFull_size <- read.csv("MP_SpeciesStarvation_Clean.csv")
 
-#extracting D prol data 
+##extracting D prol data 
 Dprol_size <- DmelFull_size[DmelFull_size$species_full == "D_prolongata",]
 
 
-#will need to convert character vectors to factors - Should probably have another script that does this (i.e., data clean up)
+##will need to convert character vectors to factors - Should probably have another script that does this (i.e., data clean up)
 Dprol_size$sex <- as.factor(Dprol_size$sex)
 Dprol_size$condition <- as.factor(Dprol_size$condition)
 Dprol_size$block <- as.factor(Dprol_size$block)
@@ -23,12 +25,12 @@ Dprol_male_trait <- select(Dprol_male, -condition, -cohort_num)
 Dprol_female <- Dprol_size[Dprol_size$sex == "F", 8:21]
 Dprol_female_trait <- select(Dprol_female, -condition, -cohort_num)
 
-#variance covariance matrix 
+##variance covariance matrix 
 
 cov(Dprol_male_trait)
 cov(Dprol_female_trait)
 
-#PCA
+##PCA
 
 PC_male <- prcomp(Dprol_male_trait)
 summary(PC_male)
@@ -42,12 +44,15 @@ female_PCA <- princomp(Dprol_female_trait)
 
 ggplot(Dprol_male, aes(y = PC_male$x[,2], x = PC_male$x[,1])) +
   geom_point() +
-  xlim(-3, 4) +
-  ylim(-3, 4) 
+  xlim(-2, 2) +
+  ylim(-2, 2) 
 
 ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
   geom_point() +
-  xlim(-3, 4) +
-  ylim(-3, 4) 
+  xlim(-2, 2) +
+  ylim(-2, 2) 
 
+##Trying to determine variable contributions
 loadings(female_PCA)
+var <- get_pca_var(PC_female)
+head(var$contrib)
