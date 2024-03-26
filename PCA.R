@@ -1,4 +1,3 @@
-
 #library
 library(tidyverse)
 
@@ -21,11 +20,13 @@ str(Dprol_size)
 Dprol_male <- Dprol_size[Dprol_size$sex == "M", c(8:21)]
 Dprol_male_trait <- select(Dprol_male, -condition, -cohort_num) 
 
-Dprol_female <- Dprol_size[Dprol_size$sex == "F", 7:]
+Dprol_female <- Dprol_size[Dprol_size$sex == "F", 8:21]
+Dprol_female_trait <- select(Dprol_female, -condition, -cohort_num)
 
 #variance covariance matrix 
 
 cov(Dprol_male_trait)
+cov(Dprol_female_trait)
 
 #PCA
 
@@ -34,9 +35,17 @@ summary(PC)
 plot(PC)
 princomp(Dprol_male_trait)
 
-
+PC <- prcomp(Dprol_female_trait)
+summary(PC)
+plot(PC)
+princomp(Dprol_female_trait)
 
 ggplot(Dprol_male, aes(y = PC$x[,2], x = PC$x[,1])) +
+  geom_point() +
+  xlim(-3, 4) +
+  ylim(-3, 4) 
+
+ggplot(Dprol_female, aes(y = PC$x[,2], x = PC$x[,1])) +
   geom_point() +
   xlim(-3, 4) +
   ylim(-3, 4) 
