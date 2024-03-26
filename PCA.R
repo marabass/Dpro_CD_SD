@@ -30,22 +30,24 @@ cov(Dprol_female_trait)
 
 #PCA
 
-PC <- prcomp(Dprol_male_trait)
-summary(PC)
-plot(PC)
+PC_male <- prcomp(Dprol_male_trait)
+summary(PC_male)
+plot(PC_male)
 princomp(Dprol_male_trait)
 
-PC <- prcomp(Dprol_female_trait)
-summary(PC)
-plot(PC)
-princomp(Dprol_female_trait)
+PC_female <- prcomp(Dprol_female_trait)
+summary(PC_female)
+plot(PC_female)
+female_PCA <- princomp(Dprol_female_trait)
 
-ggplot(Dprol_male, aes(y = PC$x[,2], x = PC$x[,1])) +
+ggplot(Dprol_male, aes(y = PC_male$x[,2], x = PC_male$x[,1])) +
   geom_point() +
   xlim(-3, 4) +
   ylim(-3, 4) 
 
-ggplot(Dprol_female, aes(y = PC$x[,2], x = PC$x[,1])) +
+ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
   geom_point() +
   xlim(-3, 4) +
   ylim(-3, 4) 
+
+loadings(female_PCA)
