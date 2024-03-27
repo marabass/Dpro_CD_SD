@@ -17,20 +17,23 @@ Dprol_size$block <- as.factor(Dprol_size$block)
 Dprol_size$cohort  <- as.factor(Dprol_size$cohort)
 str(Dprol_size)
 
-
-
 Dprol_male <- Dprol_size[Dprol_size$sex == "M", c(8:21)]
 Dprol_male_trait <- select(Dprol_male, -condition, -cohort_num) 
+Dprol_log2_male_trait <- Dprol_male_trait[,c(4,5,6,7)] #This only contaains leg and thorax measurements - does not contain any wing measurements. 
 
 Dprol_female <- Dprol_size[Dprol_size$sex == "F", 8:21]
 Dprol_female_trait <- select(Dprol_female, -condition, -cohort_num)
+Dprol_log2_female_trait <- Dprol_female_trait[,c(4,5,6,7)]
 
+###Anything above this should go in a separate data clean up script 
+  
 ##variance covariance matrix 
 
 cov(Dprol_male_trait)
 cov(Dprol_female_trait)
 
-##PCA
+##PCA - Note that the subset contains both raw values in millieters and log2 transformed values in micrometers. 
+#We should probaably decide which to use in our PCA - If it makes sensses to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
 
 PC_male <- prcomp(Dprol_male_trait)
 summary(PC_male)
