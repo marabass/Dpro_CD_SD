@@ -32,15 +32,18 @@ Dprol_log2_female_trait <- Dprol_female_trait[,c(4,5,6,7)]
 cov(Dprol_male_trait)
 cov(Dprol_female_trait)
 
-##PCA - Note that the subset contains both raw values in millieters and log2 transformed values in micrometers. 
-#We should probaably decide which to use in our PCA - If it makes sensses to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
+cov(Dprol_log2_male_trait)
+cov(Dprol_log2_female_trait)
 
-PC_male <- prcomp(Dprol_male_trait)
+##PCA - Note that the subset contains both raw values in millieters and log2 transformed values in micrometers. 
+#We should probably decide which to use in our PCA - If it makes sensses to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
+
+PC_male <- prcomp(Dprol_male_trait) # raw values including wing 
 summary(PC_male)
 plot(PC_male)
 princomp(Dprol_male_trait)
 
-PC_female <- prcomp(Dprol_female_trait)
+PC_female <- prcomp(Dprol_female_trait) 
 summary(PC_female)
 plot(PC_female)
 female_PCA <- princomp(Dprol_female_trait)
@@ -54,6 +57,34 @@ ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
   geom_point() +
   xlim(-2, 2) +
   ylim(-2, 2) 
+
+PC_male_log <- prcomp(Dprol_log2_male_trait) #log transformed without wing 
+plot(PC_male_log)
+
+PC1 <- PC_male_log$x[,1]
+
+PC_female_log <- prcomp(Dprol_log2_female_trait)
+plot(PC_female_log)
+  
+#NOte: These won't work if you use princomp
+ggplot(Dprol_log2_male_trait, aes(y = PC_male_log$x[,2], x = PC_male_log$x[,1])) +
+  geom_point() +
+  xlim(-2, 2) +
+  ylim(-2, 2) 
+
+
+ggplot(Dprol_log2_female_trait, aes(y = PC_female_log$x[,2], x = PC_female_log$x[,1])) +
+  geom_point() +
+  xlim(-2, 2) +
+  ylim(-2, 2) 
+
+#calculating size corrected values
+Size_corrected_tibL <- Dprol_log2_male_trait$leg_log_tibL/PC1
+
+
+
+
+  
 
 ##Trying to determine variable contributions
 loadings(female_PCA)
