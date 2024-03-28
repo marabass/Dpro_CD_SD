@@ -19,7 +19,7 @@ str(Dprol_size)
 
 Dprol_male <- Dprol_size[Dprol_size$sex == "M", c(8:21)]
 Dprol_male_trait <- select(Dprol_male, -condition, -cohort_num) 
-Dprol_log2_male_trait <- Dprol_male_trait[,c(4,5,6,7)] #This only contaains leg and thorax measurements - does not contain any wing measurements. 
+Dprol_log2_male_trait <- Dprol_male_trait[,c(4,5,6,7)] #This only contains leg and thorax measurements - does not contain any wing measurements. 
 
 Dprol_female <- Dprol_size[Dprol_size$sex == "F", 8:21]
 Dprol_female_trait <- select(Dprol_female, -condition, -cohort_num)
@@ -35,10 +35,10 @@ cov(Dprol_female_trait)
 cov(Dprol_log2_male_trait)
 cov(Dprol_log2_female_trait)
 
-##PCA - Note that the subset contains both raw values in millieters and log2 transformed values in micrometers. 
-#We should probably decide which to use in our PCA - If it makes sensses to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
+##PCA - Note that the subset contains both raw values in millimeters and log2 transformed values in micrometers. 
+#We should probably decide which to use in our PCA - If it makes sense to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
 
-PC_male <- prcomp(Dprol_male_trait) # raw values including wing 
+PC_male <- prcomp(Dprol_male_trait) # Includes raw and transformed values including wing 
 summary(PC_male)
 plot(PC_male)
 princomp(Dprol_male_trait)
@@ -58,8 +58,13 @@ ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
   xlim(-2, 2) +
   ylim(-2, 2) 
 
+##Using only log transformed values
+
 PC_male_log <- prcomp(Dprol_log2_male_trait) #log transformed without wing 
 plot(PC_male_log)
+summary(PC_male_log)
+
+#Note: You can get the loadings for each variable by printing 'PC_male_log' 
 
 PC1 <- PC_male_log$x[,1]
 
