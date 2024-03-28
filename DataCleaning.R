@@ -17,5 +17,3 @@ str(Dprol_size)
 Dprol_NoCondition <- Dprol_size[,-19]
 Dprol_male <- Dprol_NoCondition[Dprol_NoCondition$sex == "M",8:20,]
 Dprol_female <- Dprol_NoCondition[Dprol_NoCondition$sex == "F",8:20,]
-
-##calculate PC1, divided all sizes by PC1
