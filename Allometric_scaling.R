@@ -28,4 +28,7 @@ Dprol_female <- Dprol_size[Dprol_size$sex == "F",]
 #pool cohort level, but separate by sex - log 2 transformedd values in micrometers 
 
 #male tibia length 
-sma(leg_log_tibL ~ thorax_log_length_mm, data = Dprol_male)
+MA_tib_L <- sma(leg_log_tibL ~ thorax_log_length_mm, data = Dprol_male)
+residuals(MA_tib_L)
+plot(MA_tib_L)
+rstandard(MA_tib_L)
