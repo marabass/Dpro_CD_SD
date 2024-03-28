@@ -19,7 +19,7 @@ str(Dprol_size)
 
 Dprol_male <- Dprol_size[Dprol_size$sex == "M", c(8:21)]
 Dprol_male_trait <- select(Dprol_male, -condition, -cohort_num) 
-Dprol_log2_male_trait <- Dprol_male_trait[,c(4,5,6,7)] #This only contaains leg and thorax measurements - does not contain any wing measurements. 
+Dprol_log2_male_trait <- Dprol_male_trait[,c(4,5,6,7)] #This only contains leg and thorax measurements - does not contain any wing measurements. 
 
 Dprol_female <- Dprol_size[Dprol_size$sex == "F", 8:21]
 Dprol_female_trait <- select(Dprol_female, -condition, -cohort_num)
@@ -38,7 +38,8 @@ cov(Dprol_log2_female_trait)
 ##PCA - Note that the subset contains both raw values in millieters and log2 transformed values in micrometers. 
 #We should probably decide which to use in our PCA - If it makes sensses to use log2 transformed values are a PCA, then we should use those, because we will have to log2 transform anwyays to compare between traits
 
-PC_male <- prcomp(Dprol_male_trait) # raw values including wing 
+##Raw values with wing data
+PC_male <- prcomp(Dprol_male_trait)
 summary(PC_male)
 plot(PC_male)
 princomp(Dprol_male_trait)
@@ -58,15 +59,18 @@ ggplot(Dprol_female, aes(y = PC_female$x[,2], x = PC_female$x[,1])) +
   xlim(-2, 2) +
   ylim(-2, 2) 
 
-PC_male_log <- prcomp(Dprol_log2_male_trait) #log transformed without wing 
+##Log transformed values without wing data
+PC_male_log <- prcomp(Dprol_log2_male_trait) 
 plot(PC_male_log)
+print(PC_male_log)
 
 PC1 <- PC_male_log$x[,1]
 
 PC_female_log <- prcomp(Dprol_log2_female_trait)
 plot(PC_female_log)
+print(PC_female_log)
   
-#NOte: These won't work if you use princomp
+#Note: These won't work if you use princomp
 ggplot(Dprol_log2_male_trait, aes(y = PC_male_log$x[,2], x = PC_male_log$x[,1])) +
   geom_point() +
   xlim(-2, 2) +
@@ -80,11 +84,6 @@ ggplot(Dprol_log2_female_trait, aes(y = PC_female_log$x[,2], x = PC_female_log$x
 
 #calculating size corrected values
 Size_corrected_tibL <- Dprol_log2_male_trait$leg_log_tibL/PC1
-
-
-
-
-  
 
 ##Trying to determine variable contributions
 loadings(female_PCA)
