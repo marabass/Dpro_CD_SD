@@ -5,6 +5,7 @@ library(lme4)
 library(Matrix)
 library(ggplot2)
 library(tidyverse)
+library(dotwhisker)
 #install.packages("lme4")
 #install.packages("Matrix")
 
@@ -43,7 +44,11 @@ lm_total_size <- lm(Dprol_shapVar ~ sex + condition, data = Dprol_size)
 plot(lm_total_size)
 
 lm2 <- lm(Dprol_shapVar ~ sex + condition + log2(leg_tibL), data = Dprol_size)
+
+ggplot(data = Dprol_size, mapping = aes(leg_tibL, Dprol_shapVar, color=sex)) + geom_point()
+
 plot(lm2)
+dwplot(lm2)
 # response: tibia length -  lm(leg_log_tibL ~ sex + condtion)
 
 lmm1 <- lmer(leg_log_tibL ~ sex + condition + (1|specimen), data = Dprol_size) # random intercept model 
