@@ -40,10 +40,10 @@ ggplot(Dprol_trait_size, aes(y = Dprol_PC$x[,2], x = Dprol_PC$x[,3])) +
 
 Dprol_shapVar <- Dprol_PC$x[,2]
 
-lm_total_size <- lm(Dprol_shapVar ~ sex + condition, data = Dprol_size)
+lm_total_size <- lm(Dprol_shapVar ~ sex * condition, data = Dprol_size)
 plot(lm_total_size)
 
-lm2 <- lm(Dprol_shapVar ~ sex + condition + log2(leg_tibL), data = Dprol_size)
+lm2 <- lm(Dprol_shapVar ~ sex * condition + log2(leg_tibL), data = Dprol_size)
 
 ggplot(data = Dprol_size, mapping = aes(leg_tibL, Dprol_shapVar, color=sex)) + geom_point()
 
@@ -51,18 +51,27 @@ plot(lm2)
 dwplot(lm2)
 # response: tibia length -  lm(leg_log_tibL ~ sex + condtion)
 
-lmm1 <- lmer(leg_log_tibL ~ sex + condition + (1|specimen), data = Dprol_size) # random intercept model 
-lmm2 <- lmer(leg_log_tibL ~ sex + condition + (condition|specimen), data = Dprol_size)
+lmm1 <- lmer(leg_log_tibL ~ sex * condition + (1|specimen), data = Dprol_size) # random intercept model 
+lmm2 <- lmer(leg_log_tibL ~ sex * condition + (condition|specimen), data = Dprol_size)
 
 #Neither of the mixed models seem to work - trying to incorporate specimen into the model makes the model singular 
 
 ggplot(data = Dprol_size, mapping = aes(condition, leg_log_tibL, color=sex)) + geom_point()
-lmTibL <- lm(leg_log_tibL ~ sex + condition, data = Dprol_size)
+lmTibL <- lm(leg_log_tibL ~ sex * condition, data = Dprol_size)
+plot(lmTibL)
 
 # response: tibia width - lm(leg_log_tibW ~ sex + condition)
 ggplot(data = Dprol_size, mapping = aes(condition, leg_log_tibW, color=sex)) + geom_point() 
-lmTibW <- lm(leg_log_tibW ~ sex + condition, data = Dprol_size)
+lmTibW <- lm(leg_log_tibW ~ sex * condition, data = Dprol_size)
+plot(lmTibW)
 
 #response: leg_log_tar1L - lm(leg_log_tar1L ~ sex + condition)
 ggplot(data = Dprol_size, mapping = aes(condition, leg_log_tar1L, color=sex)) + geom_point() 
-lmTarW <- lm(leg_log_tar1L ~ sex + condition, data = Dprol_size)
+lmTarW <- lm(leg_log_tar1L ~ sex * condition, data = Dprol_size)
+plot(lmTarW)
+
+#multivariate linear regression that incorporates all leg traits 
+Ysize <- as.matrix(Dprol_size[,c("leg_log_tibL", "leg_log_tibW", "leg_log_tar1L")])
+lmMultiv <- lm(Ysize ~ sex * condition, data = Dprol_size)
+performance::check_model(lmMultiv)
+summary(lmMultiv)
