@@ -30,16 +30,16 @@ Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_len
 Dprol_PC <- prcomp(Dprol_trait_size) #Not separated by sex 
 summary(Dprol_PC)
 
-ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = sex)) +
+ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = condition)) +
   geom_point() +
-  xlim(-2, 2) +
-  ylim(-2, 2) +
+  #xlim(-5, 0.5) +
+  #ylim(-0.5, 0.5) +
   labs(x = "PC1 (92.7%)", y = "PC2 (7.2%)")
 
-ggplot(Dprol_trait_size, aes(y = Dprol_PC$x[,2], x = Dprol_PC$x[,3])) +
+ggplot(Dprol_size, aes(y = Dprol_PC$x[,2], x = Dprol_PC$x[,3], col = sex)) +
   geom_point() +
-  xlim(-2, 2) +
-  ylim(-2, 2) +
+  #xlim(-0.5, 0.5) +
+  #ylim(-0.5, 0.5) +
   labs(x = "PC2 (7.2%)", y = "PC3 (7.2%)")
 
 Dprol_shapVar <- Dprol_PC$x[,1]
@@ -91,10 +91,22 @@ ggplot(data = Dprol_size, mapping = aes(thorax_log_length_mm, leg_log_tibL, colo
   ylab(" Log2 Tibia length (um)")
 
 #Linear model of the effect of the interaction between log2 transformed (and centered) thorax length, sex and condition on log2 transformed tibia length
-lm2 <- lm(leg_log_tibL ~ thorax_log_length_mm * sex * condition, data = Dprol_size) 
-#Interpreting the intercept: 
+# Mean-centering thorax length 
 
-lmm2 <- lmer(leg_log_tibL ~ sex * condition + (1|condition:specimen), data = Dprol_size)
+lm2 <- lm(leg_log_tibL ~ thorax_log_length_mm * sex * condition, data = Dprol_size) 
+#Interpreting the intercept: Without mean-centering, the intercept is the log2 tibia length for high condition females when thorax length is 0. 
+ 
+#Mean centering thorax thorax log length - This subracts every value of log2 thoarx length by mean thorax length 
+
+Dprol_size$thorax_log_length_mm_centered <- scale(Dprol_size$thorax_log_length_mm, center = T, scale = F)
+Dprol_size$thorax_length_mm_centered <- scale(Dprol_size$thorax_length_mm, center = T, scale = F)
+
+lm3 <- lm(leg_log_tibL ~ thorax_log_length_mm_centered* sex * condition, data = Dprol_size) 
+plot(lm3)
+summary(lm3)
+
+
+lmm1 <- lmer(leg_log_tibL ~ thorax_log_length_mm_centered * sex * condition + (1|condition:specimen), data = Dprol_size)
 isSingular(lmm2)
 #Neither of the mixed models seem to work - trying to incorporate specimen into the model makes the model singular 
 
