@@ -25,7 +25,7 @@ ggplot(Dmel_trait_size, aes(y = Dmel_PC$x[,2], x = Dmel_PC$x[,3])) +
   xlim(-2, 2) +
   ylim(-2, 2) 
 
-##Shape variation melanogaster
+##Shape variation melanogaster, PC2 and on is small, is this necessry to run with principal components?
 Dmel_shapVar <- Dmel_PC$x[,2]
 
 lm_total_size_Dmel <- lm(Dmel_shapVar ~ sex * condition, data = Dmel_size)
@@ -38,5 +38,14 @@ ggplot(data = Dmel_size, mapping = aes(leg_tibL, Dmel_shapVar, color=sex)) + geo
 plot(lm2)
 dwplot(lm2)
 
-Dmel_sizeVar <- Dmel_PC$x[,1] ##PC1 explains size, so this is correct for investigating size?
+##Size variation melanogaster
+Dmel_sizeVar <- Dmel_PC$x[,1]
+lm_total_size_Dmel <- lm(Dmel_sizeVar ~ sex * condition, data = Dmel_size)
+plot(lm_total_size)
 
+lm2 <- lm(Dmel_sizeVar ~ sex * condition + log2(leg_tibL), data = Dmel_size)
+
+ggplot(data = Dmel_size, mapping = aes(leg_tibL, Dmel_sizeVar, color=sex)) + geom_point()
+
+plot(lm2)
+dwplot(lm2)
