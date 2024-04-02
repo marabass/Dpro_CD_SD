@@ -31,7 +31,16 @@ confint(lm_wing)
 wing_HC_F <-  Dprol_wing_body %>%
   group_by(sex, condition) %>%
   summarize(mean(wing_area_mm_sq))
+summary(wing_HC_F)
 
 wing_F <- Dprol_wing_body %>%
   group_by(sex) %>%
   summarize(mean(wing_area_mm_sq))
+summary(wing_F)
+
+Dprol_wing_body$thorax_log_length <- log2(as.numeric(Dprol_wing_body$thorax_length_mm))
+
+ggplot(data = Dprol_wing_body, mapping = aes(thorax_log_length, log2wing_area, colour = sex)) + 
+  geom_point() +
+  facet_wrap(~condition) + 
+  ylab("Log2 Wing Size")
