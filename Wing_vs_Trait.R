@@ -43,4 +43,7 @@ Dprol_wing_body$thorax_log_length <- log2(as.numeric(Dprol_wing_body$thorax_leng
 ggplot(data = Dprol_wing_body, mapping = aes(thorax_log_length, log2wing_area, colour = sex)) + 
   geom_point() +
   facet_wrap(~condition) + 
-  ylab("Log2 Wing Size")
+  ylab("Log2 Wing Size") +
+  xlab("Log2 Thorax Length")
+
+lm_wing <- lm(log2wing_area ~ sex * condition, data = Dprol_wing_body)
