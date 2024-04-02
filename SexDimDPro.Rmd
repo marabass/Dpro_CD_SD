@@ -1,0 +1,52 @@
+---
+title: "Sexual Dimorphism in *Drosophila prolongata*"
+output: powerpoint_presentation
+date: "2024-04-02"
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+```
+
+## Model Species
+
+:::::::::::::: {.columns}
+::: {.column}
+- In most species of *Drosophila*, females are larger than males
+- However, in *D. prolongata*, it is reversed
+:::
+::: {.column}
+```{r fig.cap = "***(a)** Male and **(b)** female* Drosophila prolongata *adapted from Setoguchi et al. (2014)*"}
+
+include_graphics("prolongata.PNG")
+
+```
+:::
+::::::::::::::
+
+## Experiment
+:::::::::::::: {.columns}
+::: {.column}
+### Treatment
+- 27 species from *D. melanogaster* species group used
+  - Our analysis just focuses on *D. prolongata*
+- Each group was exposed to increasing periods of starvation during larval development
+
+:::
+::: {.column}
+### Hypothesis
+- It was predicted that traits and species that were more sexually dimorphic would be more condition dependent than those that were less dimorphic
+:::
+::::::::::::::
+
+
+
+
+## Data Analysis
+
+```{r pressure}
+plot(pressure)
+```
+
