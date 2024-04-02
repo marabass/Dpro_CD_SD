@@ -90,25 +90,33 @@ ggplot(data = Dprol_size, mapping = aes(thorax_log_length_mm, leg_log_tibL, colo
   facet_wrap(~condition) + 
   ylab(" Log2 Tibia length (um)")
 
-#Linear model of the effect of the interaction between log2 transformed (and centered) thorax length, sex and condition on log2 transformed tibia length
+#Linear model of the effect of the interaction between log2 transformed (and centered) thorax length, sex and condition on log2(tibia length)
 # Mean-centering thorax length 
 
 lm2 <- lm(leg_log_tibL ~ thorax_log_length_mm * sex * condition, data = Dprol_size) 
-#Interpreting the intercept: Without mean-centering, the intercept is the log2 tibia length for high condition females when thorax length is 0. 
+#Interpreting the intercept: Without mean-centering, the intercept is the log2 (tibia length) for high condition females when thorax length is 0. 
  
-#Mean centering thorax thorax log length - This subracts every value of log2 thoarx length by mean thorax length 
-
+#Mean centering thorax thorax log length - This subtracts every value of log2 thorax length by mean thorax length 
 Dprol_size$thorax_log_length_mm_centered <- scale(Dprol_size$thorax_log_length_mm, center = T, scale = F)
-Dprol_size$thorax_length_mm_centered <- scale(Dprol_size$thorax_length_mm, center = T, scale = F)
+
+ggplot(data = Dprol_size, mapping = aes(thorax_log_length_mm_centered, leg_log_tibL, colour = sex)) + 
+  geom_point() +
+  geom_smooth(method = lm) +
+  facet_wrap(~condition) + 
+  ylab(" Log2 Tibia length (um)")
 
 lm3 <- lm(leg_log_tibL ~ thorax_log_length_mm_centered* sex * condition, data = Dprol_size) 
 plot(lm3)
 summary(lm3)
 
+#After mean centering, the intercept of the model is estimated mean log2(tibia length) high condition females at mean body size. OR the predicted log2(tibia length) for high condition females that have an average body size
+#Interpreting the three-way interaction coefficient: thorax_log_length_mm_centered:sex:condition - 
+#The difference between sexes at high vs low condition for the slope of the relationship between log2(tibia length) and log2(thorax length) 
 
+#Trying to incorporate a random intercept(s?) to control for variability between individuals in condition cohorts 
 lmm1 <- lmer(leg_log_tibL ~ thorax_log_length_mm_centered * sex * condition + (1|condition:specimen), data = Dprol_size)
 isSingular(lmm2)
-#Neither of the mixed models seem to work - trying to incorporate specimen into the model makes the model singular 
+#Neither of the mixed models seem to work - trying to incorporate specimen into the model makes the model singular? 
 
 ggplot(data = Dprol_size, mapping = aes(condition, leg_log_tibL, color=sex)) + geom_point()
 
@@ -126,6 +134,5 @@ plot(lmTarW)
 
 #multivariate linear regression that incorporates all leg traits 
 Ysize <- as.matrix(Dprol_size[,c("leg_log_tibL", "leg_log_tibW", "leg_log_tar1L")])
-lmMultiv <- lm(Ysize ~ sex * condition, data = Dprol_size)
-performance::check_model(lmMultiv)
-summary(lmMultiv)
+lmMultiv <- lm(Ysize ~ thorax_log_length_mm_centered * sex * condition, data = Dprol_size)
+
