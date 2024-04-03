@@ -83,7 +83,7 @@ PC_loadings <- Dprol_PC$rotation
 :::::::::::::: {.columns}
 ::: {.column}
 ```{r fig.cap = "*PC1 accounts for most of the variation we see*"}
-ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = condition)) +
+ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = sex)) +
   geom_point() +
   #xlim(-5, 0.5) +
   #ylim(-0.5, 0.5) +
@@ -105,3 +105,46 @@ ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = condition))
 :::
 ::::::::::::::
 
+## Multivariate Analysis
+```{r Multivariate Analysis, include = FALSE}
+Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
+Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm)
+Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
+
+cov(Dprol_trait_size_log)
+pairs(Dprol_trait_size_log)
+
+Dprol_long <- (Dprol_trait_full 
+             %>% gather(trait,value, c(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm))
+             %>% mutate(value=log2(value*1000))
+             %>% drop_na()
+)
+
+head(Dprol_long)
+#fitting a linear mixed model 
+lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long, 
+             control = lmerControl(optCtrl=list(ftol_abs=1e-8),
+                                   check.nobs.vs.nlev="ignore",
+                                   check.nobs.vs.nRE="ignore"))
+
+all_traits_ssd <- emmeans(lmm1,  pairwise ~ sex*condition*trait)
+
+all_traits_ssd_contrasts <- contrast(all_traits_ssd[[1]], 
+                                     interaction = c(condtion = "trt.vs.ctrl1", sex = "pairwise"),
+                                     by = "trait")
+
+
+all_traits_ssd_contrasts
+
+confint(all_traits_ssd_contrasts)
+
+all_traits_ssd_extract  <- pairs(emmeans(lmm1, 
+                                         specs = ~ sex | condition + trait), simple = "sex", by = "trait")
+```
+
+```{r Multivariate Slide fig.cap = "Write caption here"}
+
+plot(all_traits_ssd_contrasts) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "change in SSD in after starvation", y = "comparison") +
+  theme_bw()
