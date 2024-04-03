@@ -1,34 +1,30 @@
-##Note: I don't think block number has to be incorporated as a random effect because this species was all done in the same experimental block
-#Maybe specimen number (i.e., the size differences between individuals) would make more sense as a random effect in our models
+#Loading packages 
 
 library(lme4)
-library(Matrix)
-library(ggplot2)
+#library(Matrix)
+#library(ggplot2)
 library(tidyverse)
-library(dotwhisker)
-library(performance)
+#library(dotwhisker)
+#library(performance)
+library(emmeans)
+library(ggplot2); theme_set(theme_bw())
+library(corrplot)
 #install.packages("lme4")
 #install.packages("Matrix")
 
 ##load in the data 
-DmelFull_size <- read.csv("MP_SpeciesStarvation_Clean.csv")
-
-##extracting D prol data 
-Dprol_size <- DmelFull_size[DmelFull_size$species_full == "D_prolongata",]
-
-Dprol_size$sex <- as.factor(Dprol_size$sex)
-Dprol_size$condition <- as.factor(Dprol_size$condition)
-Dprol_size$block <- as.factor(Dprol_size$block)
-Dprol_size$cohort  <- as.factor(Dprol_size$cohort)
-Dprol_size$specimen <- as.factor(Dprol_size$specimen)
-str(Dprol_size)
+Dprol_size <- readRDS("Dprol_size.rds")
 
 # response: total size - lm(PCx ~ sex + condition + (1|block))
 #PC1 as a measure of total shape 
 
 Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm) 
-Dprol_PC <- prcomp(Dprol_trait_size) #Not separated by sex 
+
+Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
+
+Dprol_PC <- prcomp(Dprol_trait_size_log) 
 summary(Dprol_PC)
+PC_loadings <- Dprol_PC$rotation
 
 ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = condition)) +
   geom_point() +
@@ -40,19 +36,29 @@ ggplot(Dprol_size, aes(y = Dprol_PC$x[,2], x = Dprol_PC$x[,3], col = sex)) +
   geom_point() +
   #xlim(-0.5, 0.5) +
   #ylim(-0.5, 0.5) +
-  labs(x = "PC2 (7.2%)", y = "PC3 (7.2%)")
+  labs(x = "PC2 (7.2%)", y = "PC3 (0.094%)")
 
-Dprol_shapVar <- Dprol_PC$x[,1]
+Dprol_sizeVar <- Dprol_PC$x[,1]
 
-lm_total_size <- lm(Dprol_shapVar ~ sex * condition, data = Dprol_size)
-plot(lm_total_size)
+lm_size <- lm(Dprol_sizeVar ~ sex * condition, data = Dprol_size)
+plot(lm_size)
 
-lm2 <- lm(Dprol_shapVar ~ sex * condition + log2(leg_tibL), data = Dprol_size)
+ggplot(data = Dprol_size, mapping = aes(condition, Dprol_sizeVar, group = sex, colour = sex)) + 
+  geom_point() +
+  geom_smooth(method = lm) + 
+  ylab("variation in size (PC1)")
 
-ggplot(data = Dprol_size, mapping = aes(leg_tibL, Dprol_shapVar, color=sex)) + geom_point()
+summary(lm_size)
 
-plot(lm2)
-dwplot(lm2)
+#I want to correct for variation between individuals within the condition cohorts - using a nested design 
+
+lmm <- lmer(Dprol_sizeVar ~ sex * condition + (1 | condition) + (1 |condition:specimen), data = Dprol_size)
+isSingular(lmm)
+
+#lm2 <- lm(Dprol_shapVar ~ sex * condition + log2(leg_tibL), data = Dprol_size)
+#ggplot(data = Dprol_size, mapping = aes(leg_tibL, Dprol_shapVar, color=sex)) + geom_point()
+#plot(lm2)
+
 
 
 # response: tibia length -  lm(leg_log_tibL ~ sex * condition) - The effect of the interaction between sex and condition on absolute tibia length
@@ -133,6 +139,62 @@ lmTarW <- lm(leg_log_tar1L ~ sex * condition, data = Dprol_size)
 plot(lmTarW)
 
 #multivariate linear regression that incorporates all leg traits 
-Ysize <- as.matrix(Dprol_size[,c("leg_log_tibL", "leg_log_tibW", "leg_log_tar1L")])
-lmMultiv <- lm(Ysize ~ thorax_log_length_mm_centered * sex * condition, data = Dprol_size)
+
+Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
+Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm)
+Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
+
+#variance co-variance matrix - checking the correlation between our variables - covariation seems quite low - is this good? 
+cov(Dprol_trait_size)
+pairs(Dprol_trait_size_log)
+
+
+
+Ysize <- as.matrix(Dprol_trait_size_log)
+lmMultiv <- lm(Ysize ~ sex * condition, data = Dprol_size)
+class(lmMultiv)
+summary(manova(lmMultiv))
+
+#converting our data set to the long version 
+head(Dprol_trait_size_log)
+
+Dprol_long <- (Dprol_trait_full 
+             %>% gather(trait,value, c(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm))
+             %>% mutate(value=log2(value*1000))
+             %>% drop_na()
+)
+
+head(Dprol_long)
+#fitting a linear mixed model 
+lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long, 
+             control = lmerControl(optCtrl=list(ftol_abs=1e-8),
+                                   check.nobs.vs.nlev="ignore",
+                                   check.nobs.vs.nRE="ignore"))
+
+#par(mfrow=c(1,2))
+vv1 <- VarCorr(lmm1) #somthing wrong here - 
+## fix unit variance-covariance by adding residual variance:
+diag(vv1$specimen) <- diag(vv1$specimen)+sigma(lmm1)^2
+corrplot.mixed(cov2cor(vv1$specimen),upper="ellipse")
+
+
+##contrasts 
+all_traits_ssd <- emmeans(lmm1,  pairwise ~ sex*condition*trait)
+
+all_traits_ssd_contrasts <- contrast(all_traits_ssd[[1]], 
+                                     interaction = c(condtion = "trt.vs.ctrl1", sex = "pairwise"),
+                                     by = "trait")
+
+
+all_traits_ssd_contrasts
+
+confint(all_traits_ssd_contrasts)
+
+plot(all_traits_ssd_contrasts) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "change in SSD in after starvation", y = "comparison") +
+  theme_bw()
+
+all_traits_ssd_extract  <- pairs(emmeans(lmm1, 
+                                         specs = ~ sex | condition + trait), simple = "sex", by = "trait")
 
