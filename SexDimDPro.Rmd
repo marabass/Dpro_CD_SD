@@ -1,6 +1,7 @@
 ---
 title: "Sexual Dimorphism in *Drosophila prolongata*"
-output: powerpoint_presentation
+output: 
+  powerpoint_presentation
 date: "2024-04-02"
 ---
 
@@ -42,11 +43,22 @@ include_graphics("prolongata.PNG")
 ::::::::::::::
 
 
-## *Drosophila prolongata* Observations
+## *Drosophila prolongata* Initial Observations
+:::::::::::::: {.columns}
+::: {.column}
 - *D. prolongata* has strong sexual dimorphism in tibia and tarsus size
   - despite this, they are only moderately condition dependent
   - all other species in the experiment exhibited moderate dimorphism and condition dependence
-- This leads us to a couple new hypotheses to investigate about *D. prolongata*
+:::
+::: {.column}
+- This leads us to a couple new hypotheses to investigate concerning *D. prolongata*
   1. Starvation during larval development will decrease sexual dimorphism in forelegs
   2. More sexually dimorphic traits (forelegs) will exhibit more condition dependence than less dimorphic traits (wings) 
+:::
+::::::::::::::
 
+## Proposed Analyses
+- Perform PCA analysis or log2 scaling to control for shape variation
+  - will allow us to investigate size without the influence of shape
+  - log2 scaling seems to be the easier option
+- 
