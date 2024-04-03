@@ -27,7 +27,9 @@ Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
 :::::::::::::: {.columns}
 ::: {.column}
 - In most species of *Drosophila*, females are larger than males
-- However, in *D. prolongata*, it is reversed
+- However, in *D. prolongata*, males are larger than females
+  - Additionally, there is a particular distinction between their forelegs
+- This makes *D. prolongata* an excellent model for investigating how sexual dimorphism influences developmental growth
 :::
 ::: {.column}
 ```{r fig.cap = "***(a)** Male and **(b)** female* Drosophila prolongata *adapted from Setoguchi et al. (2014)*"}
@@ -105,6 +107,28 @@ ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = sex)) +
 :::
 ::::::::::::::
 
+## Checking For Data Isometry
+:::::::::::::: {.columns}
+::: {.column}
+- Since we are using a multivariate model on log-transformed data, we want to check that our loadings indicate isometry
+- This way, we can ensure that we have controlled for all non-size variation
+- Isometry is indicated when all PC1 loadings are equal to 1/√n
+:::
+::: {.column}
++---------------+---------------+
+| Trait         | PC1 Loadings  |
++===============+===============+
+| Tibia Length  | 0.4987080     |
++---------------+---------------+
+| Tibia Width   | 0.7313304     |
++---------------+---------------+
+| Tarsus Length | 0.4335791     |
++---------------+---------------+
+| Thorax Length | 0.1686874     |
++---------------+---------------+
+:::
+::::::::::::::
+
 ## Multivariate Analysis
 ```{r Multivariate Analysis, include = FALSE}
 Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
@@ -142,7 +166,7 @@ all_traits_ssd_extract  <- pairs(emmeans(lmm1,
                                          specs = ~ sex | condition + trait), simple = "sex", by = "trait")
 ```
 
-```{r Multivariate Slide fig.cap = "Write caption here"}
+```{r Multivariate Slide}
 
 plot(all_traits_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
