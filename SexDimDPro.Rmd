@@ -9,6 +9,17 @@ date: "2024-04-02"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
+library(lme4)
+library(tidyverse)
+library(emmeans)
+library(ggplot2); theme_set(theme_bw())
+library(corrplot)
+
+Dprol_size <- readRDS("Dprol_size.rds")
+
+Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm) 
+
+Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
 ```
 
 ## Model Species
@@ -58,7 +69,39 @@ include_graphics("prolongata.PNG")
 ::::::::::::::
 
 ## Proposed Analyses
-- Perform PCA analysis or log2 scaling to control for shape variation
+- Perform PCA analysis
   - will allow us to investigate size without the influence of shape
-  - log2 scaling seems to be the easier option
-- 
+- log2 scaling
+  - allows us to investigate proportional size differences instead of absolute
+
+## Principal Components Analysis
+```{r Principal Components}
+Dprol_PC <- prcomp(Dprol_trait_size_log)
+PC_loadings <- Dprol_PC$rotation
+```
+
+:::::::::::::: {.columns}
+::: {.column}
+```{r fig.cap = "*PC1 accounts for most of the variation we see*"}
+ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = condition)) +
+  geom_point() +
+  #xlim(-5, 0.5) +
+  #ylim(-0.5, 0.5) +
+  labs(x = "PC1 (92.7%)", y = "PC2 (7.2%)")
+```
+:::
+::: {.column}
++---------------+---------------+--------------------+
+| Trait         | PC1 Loadings  | PC2 Loadings       |
++===============+===============+====================+
+| Tibia Length  | 0.4987080     | -0.03130124        |
++---------------+---------------+--------------------+
+| Tibia Width   | 0.7313304     | 0.41634811         |
++---------------+---------------+--------------------+
+| Tarsus Length | 0.4335791     | -0.33812703        |
++---------------+---------------+--------------------+
+| Thorax Length | 0.1686874     | -0.84341247        |
++---------------+---------------+--------------------+
+:::
+::::::::::::::
+
