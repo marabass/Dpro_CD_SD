@@ -72,9 +72,11 @@ include_graphics("prolongata.PNG")
 
 ## Proposed Analyses
 - Perform PCA analysis
-  - will allow us to investigate size without the influence of shape
+  - allows us to investigate size without the influence of shape
 - log2 scaling
   - allows us to investigate proportional size differences instead of absolute
+- Multivariate Analysis
+  - allows us to investigate each trait's relationship to the others
 
 ## Principal Components Analysis
 ```{r Principal Components}
