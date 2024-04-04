@@ -9,12 +9,13 @@ date: "2024-04-02"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
-library(lme4)
 library(tidyverse)
+library(lme4)
 library(emmeans)
 library(ggplot2); theme_set(theme_bw())
 library(corrplot)
 library(car)
+library(Matrix)
 
 Dprol_size <- readRDS("Dprol_size.rds")
 
@@ -137,12 +138,10 @@ Dprol_trait_full$tar1L_log2 <- (log2(Dprol_trait_full[,"leg_tar1L"])*1000)
 Dprol_trait_full$thoraxl_log2 <- (log2(Dprol_trait_full[,"thorax_length_mm"])*1000)
 ```
 
-
 ```{r correlation}
 scatterplotMatrix( ~ tibL_log2 + tibW_log2 + tar1L_log2 +thoraxl_log2|sex, 
                    ellipse = T, data = Dprol_trait_full)
 ```
-
 
 ## Multivariate Analysis
 ```{r Multivariate Analysis, include = FALSE}
