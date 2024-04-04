@@ -198,12 +198,11 @@ head(Dprol_trait_size_log)
 Dprol_long <- (Dprol_trait_full 
              %>% gather(trait,value, c(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm))
              %>% mutate(value=log2(value*1000))
-             %>% drop_na()
 )
 
 head(Dprol_long)
 #fitting a linear mixed model 
-lmm1 <- blmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long, 
+lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long, 
              control = lmerControl(optCtrl=list(ftol_abs=1e-8),
                                    check.nobs.vs.nlev="ignore",
                                   check.nobs.vs.nRE="ignore"))
