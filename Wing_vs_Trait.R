@@ -1,10 +1,13 @@
 ##Setting up everything we need
 library(lme4)
+library(blme)
 library(Matrix)
-library(ggplot2)
+library(ggplot2); theme_set(theme_light())
 library(tidyverse)
 library(dotwhisker)
 library(performance)
+library(emmeans)
+library(corrplot)
 
 Dprol_size <- readRDS("Dprol_size.rds")
 
