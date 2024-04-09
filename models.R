@@ -5,12 +5,17 @@ library(blme)
 library(Matrix)
 #library(ggplot2)
 library(tidyverse)
+<<<<<<< HEAD
 library(dotwhisker)
 library(performance)
+=======
+#library(dotwhisker)
+>>>>>>> 4ae40fa4798c114bec2e9817c5a0a8a39e1a0a37
 library(emmeans)
 library(ggplot2); theme_set(theme_bw())
 library(corrplot)
 library(performance)
+library(car)
 #install.packages("lme4")
 #install.packages("Matrix")
 
@@ -54,7 +59,7 @@ summary(lm_size)
 
 #I want to correct for variation between individuals within the condition cohorts - using a nested design 
 
-lmm <- lmer(Dprol_sizeVar ~ sex * condition + (1 | condition) + (1 |condition:specimen), data = Dprol_size)
+#lmm <- lmer(Dprol_sizeVar ~ sex * condition + (1 | condition) + (1 |condition:specimen), data = Dprol_size)
 isSingular(lmm)
 
 #lm2 <- lm(Dprol_shapVar ~ sex * condition + log2(leg_tibL), data = Dprol_size)
@@ -144,7 +149,7 @@ plot(lmTarW)
 
 Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
 
-log2(Dprol_size$leg_tibL*1000)
+#log2(Dprol_size$leg_tibL*1000)
 
 Dprol_trait_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
 Dprol_trait_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
@@ -210,12 +215,17 @@ Dprol_long <- (Dprol_trait_full[,5:13]
 head(Dprol_long)
 str(Dprol_long)
 
+ggplot(data = Dprol_trait_full, mapping = aes(condition, thoraxl_log2, color=sex)) + geom_point() 
+
+Dprol_long$trait
 #fitting a multivariate linear mixed model 
 lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long)
 check_model(lmm1)
 summary(lmm1)
 
 blmm1 <- blmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long)
+class(blmm1) <- "merMod" #diagnostics 
+check_model(blmm1)
 summary(blmm1)
 
 #troubleshooting 
