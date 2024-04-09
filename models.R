@@ -2,10 +2,15 @@
 
 library(lme4)
 library(blme)
-#library(Matrix)
+library(Matrix)
 #library(ggplot2)
 library(tidyverse)
+<<<<<<< HEAD
+library(dotwhisker)
+library(performance)
+=======
 #library(dotwhisker)
+>>>>>>> 4ae40fa4798c114bec2e9817c5a0a8a39e1a0a37
 library(emmeans)
 library(ggplot2); theme_set(theme_bw())
 library(corrplot)
