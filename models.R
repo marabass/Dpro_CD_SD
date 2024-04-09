@@ -10,6 +10,7 @@ library(tidyverse)
 library(emmeans)
 library(ggplot2); theme_set(theme_bw())
 library(corrplot)
+library(performance)
 #install.packages("lme4")
 #install.packages("Matrix")
 
@@ -143,10 +144,12 @@ plot(lmTarW)
 
 Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
 
-Dprol_trait_full$tibL_log2 <- (log2(Dprol_trait_full[,"leg_tibL"])*1000)
-Dprol_trait_full$tibW_log2 <- (log2(Dprol_trait_full[,"leg_tibW"])*1000)
-Dprol_trait_full$tar1L_log2 <- (log2(Dprol_trait_full[,"leg_tar1L"])*1000)
-Dprol_trait_full$thoraxl_log2 <- (log2(Dprol_trait_full[,"thorax_length_mm"])*1000)
+log2(Dprol_size$leg_tibL*1000)
+
+Dprol_trait_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
+Dprol_trait_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
+Dprol_trait_full$tar1L_log2 <- (log2((Dprol_trait_full[,"leg_tar1L"])*1000))
+Dprol_trait_full$thoraxl_log2 <- (log2((Dprol_trait_full[,"thorax_length_mm"])*1000))
 
 
 
@@ -160,15 +163,19 @@ cor(Dprol_trait_full[,1:4]) # this is not that meaningful, but shows the impact 
 pairs(Dprol_trait_full[,1:4])
 
 scatterplotMatrix( ~ tibL_log2 + tibW_log2 + tar1L_log2 +thoraxl_log2|sex, 
-                   ellipse = T, data = Dprol_trait_full,
-                   transform = T)
-#fitting a mixed linear model 
+                   ellipse = T, data = Dprol_trait_full)
+
+#fitting a multivariate linear model 
 
 Dprol_trait_size <- Dprol_trait_full[,10:13]
 
 Ysize <- as.matrix(Dprol_trait_size)
 lmMultiv <- lm(Ysize ~ sex * condition, data = Dprol_trait_full)
-#class(lmMultiv)
+
+plot(lmMultiv)
+check_model(lmMultiv) #Not sure how to check the fit of this model 
+
+
 summary(lmMultiv )
 summary(manova(lmMultiv))
 
@@ -178,9 +185,11 @@ all_traits_ssd_contrasts <- mvcontrast(all_traits_ssd[[1]], interaction = c(cond
                                     mult.name = Ysize)
 
 
+
 all_traits_ssd_contrasts
 
 confint(all_traits_ssd_contrasts)
+
 
 
 #The contrasts on display here are the differences in log2 trait size between males and females across high and low condition 
@@ -192,24 +201,24 @@ plot(all_traits_ssd_contrasts) +
 all_traits_ssd_extract  <- pairs(emmeans(lmm1, 
                                          specs = ~ sex | condition + trait), simple = "sex", by = "trait")
 
-#converting our data set to the long version 
-head(Dprol_trait_size_log)
+#converting data set to the long version 
 
-Dprol_long <- (Dprol_trait_full 
-             %>% gather(trait,value, c(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm))
-             %>% mutate(value=log2(value*1000))
+Dprol_long <- (Dprol_trait_full[,5:13] 
+             %>% gather(trait,value, c(tibL_log2 , tibW_log2, tar1L_log2, thoraxl_log2))
 )
 
 head(Dprol_long)
-#fitting a linear mixed model 
-lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long, 
-             control = lmerControl(optCtrl=list(ftol_abs=1e-8),
-                                   check.nobs.vs.nlev="ignore",
-                                  check.nobs.vs.nRE="ignore"))
+str(Dprol_long)
 
-
+#fitting a multivariate linear mixed model 
+lmm1 <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long)
+check_model(lmm1)
 summary(lmm1)
-#par(mfrow=c(1,2))
+
+blmm1 <- blmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long)
+summary(blmm1)
+
+#troubleshooting 
 vv1 <- VarCorr(lmm1) #somthing wrong here - 
 ## fix unit variance-covariance by adding residual variance:
 diag(vv1$specimen) <- diag(vv1$specimen)+sigma(lmm1)^2
