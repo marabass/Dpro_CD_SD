@@ -27,7 +27,11 @@ PCA using variables: tibia length and width, tarsus, and thorax length across bo
 
 Given that size (PC1) accounts for most (~93%) of the variation in our trait measurements, it might a better idea to evaluate the effect of the interaction between sex and condition on PC1 as a measurement of total size using a linear model. As opposed to trying to look at changes in the slope of individual traitss vs thorax size across sexes and condition levels. 
 
-I would like to incorporate a random intercept into the linear model to account for the variation between flies in each cohort level. 
+evaluating whether PC1 is an accurate reflection of size. The allometric coeffcient is reflected by the loadings of PC1 (the first eigenvector of the VCV matrix) 
+
+Tried to fit a multivariate mixed effects linear model looking at the effect of the interaction between sex and condition on leg traits using lmer: (value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long).  Model yields a singular fit.
+
+Used blmer to run the same model. Diagnostics look mostly ok. Normality of residuals is giving a weird results. 
 
 
 
