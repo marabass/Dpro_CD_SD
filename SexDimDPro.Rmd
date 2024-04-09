@@ -9,12 +9,13 @@ date: "2024-04-02"
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
-library(lme4)
 library(tidyverse)
+library(lme4)
 library(emmeans)
 library(ggplot2); theme_set(theme_bw())
 library(corrplot)
 library(car)
+library(Matrix)
 
 Dprol_size <- readRDS("Dprol_size.rds")
 
@@ -22,6 +23,23 @@ Dprol_trait_size <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_len
 
 Dprol_trait_size_log <- log2(Dprol_trait_size*1000)
 ```
+
+## Experiment
+:::::::::::::: {.columns}
+::: {.column}
+### Treatment
+- 27 species from *D. melanogaster* species group used
+  - Our analysis just focuses on *D. prolongata*
+- Each group was exposed to increasing periods of starvation during larval development
+
+(Pesevski, 2021)
+
+:::
+::: {.column}
+### Hypothesis
+- It was predicted that traits and species that were more sexually dimorphic would be more condition dependent than those that were less dimorphic
+:::
+::::::::::::::
 
 ## Model Species
 
@@ -41,22 +59,6 @@ include_graphics("prolongata.PNG")
 :::
 ::::::::::::::
 
-## Experiment
-:::::::::::::: {.columns}
-::: {.column}
-### Treatment
-- 27 species from *D. melanogaster* species group used
-  - Our analysis just focuses on *D. prolongata*
-- Each group was exposed to increasing periods of starvation during larval development
-
-:::
-::: {.column}
-### Hypothesis
-- It was predicted that traits and species that were more sexually dimorphic would be more condition dependent than those that were less dimorphic
-:::
-::::::::::::::
-
-
 ## *Drosophila prolongata* Initial Observations
 :::::::::::::: {.columns}
 ::: {.column}
@@ -73,9 +75,11 @@ include_graphics("prolongata.PNG")
 
 ## Proposed Analyses
 - Perform PCA analysis
-  - will allow us to investigate size without the influence of shape
+  - allows us to investigate size without the influence of shape
 - log2 scaling
   - allows us to investigate proportional size differences instead of absolute
+- Multivariate Analysis
+  - allows us to investigate each trait's relationship to the others
 
 ## Principal Components Analysis
 ```{r Principal Components}
@@ -111,7 +115,7 @@ ggplot(Dprol_size, aes(y = Dprol_PC$x[,1], x = Dprol_PC$x[,2], col = sex)) +
 ::: {.column}
 - Since we are using a multivariate model on log-transformed data, we want to check that our loadings indicate isometry
 - This way, we can ensure that we have controlled for all non-size variation
-- Isometry is indicated when all PC1 loadings are equal to 1/√n
+- Isometry is indicated when all PC1 loadings are equal to 1/√n (Jolicoeur, 1963)
 :::
 ::: {.column}
 +---------------+---------------+
@@ -137,12 +141,11 @@ Dprol_trait_full$tar1L_log2 <- (log2(Dprol_trait_full[,"leg_tar1L"])*1000)
 Dprol_trait_full$thoraxl_log2 <- (log2(Dprol_trait_full[,"thorax_length_mm"])*1000)
 ```
 
-
+## Multivariate Analysis: Why?
 ```{r correlation}
 scatterplotMatrix( ~ tibL_log2 + tibW_log2 + tar1L_log2 +thoraxl_log2|sex, 
                    ellipse = T, data = Dprol_trait_full)
 ```
-
 
 ## Multivariate Analysis
 ```{r Multivariate Analysis, include = FALSE}
@@ -176,3 +179,11 @@ plot(all_traits_ssd_contrasts) +
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
   labs(x = "log2 change in SSD in HC vs LC", y = "comparison") +
   theme_bw()
+```
+
+## References
+Jolicoeur, P. (1963). 193. Note: The Multivariate Generalization of the Allometry Equation. Biometrics, 19(3), 497–499. https://doi.org/10.2307/2527939
+
+Pesevski, M. (2021). Influence of environmental variation on sexual dimorphism in Drosophila morphology among adaptively diverged populations and in an inter-specific comparative context. [Thesis]. https://macsphere.mcmaster.ca/handle/11375/26936
+
+Setoguchi, S., Takamori, H., Aotsuka, T., Sese, J., & Matsuo, T. (2014). Sexual dimorphism and courtship behavior in Drosophila prolongata. Journal of Ethology, 32. https://doi.org/10.1007/s10164-014-0399-z\
