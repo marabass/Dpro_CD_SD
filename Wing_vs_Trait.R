@@ -8,6 +8,9 @@ library(dotwhisker)
 library(performance)
 library(emmeans)
 library(corrplot)
+library(scatterPlotMatrix)
+
+install.packages("scatterPlotMatrix")
 
 Dprol_size <- readRDS("Dprol_size.rds")
 
@@ -41,12 +44,36 @@ wing_F <- Dprol_wing_body %>%
   summarize(mean(wing_area_mm_sq))
 summary(wing_F)
 
-Dprol_wing_body$thorax_log_length <- log2(as.numeric(Dprol_wing_body$thorax_length_mm))
-
-ggplot(data = Dprol_wing_body, mapping = aes(thorax_log_length, log2wing_area, colour = sex)) + 
+ggplot(data = Dprol_wing_body, mapping = aes(log2thoraxL, log2wing_area, colour = sex)) + 
   geom_point() +
   facet_wrap(~condition) + 
   ylab("Log2 Wing Size") +
   xlab("Log2 Thorax Length")
 
-lm_wing <- lm(log2wing_area ~ sex * condition, data = Dprol_wing_body)
+##This is all very unnecessary for my purposes I think
+
+##ggplot(data = Dprol_wing_body, mapping = aes(log2thoraxL, log2wing_area, group = sex, colour = sex)) +
+  ##geom_point() +
+  ##geom_smooth(method = lm) +
+  ##ylab("log2 Wing Size")
+
+##ggplot(data = Dprol_wing_body, mapping = aes(log2thoraxL, log2tar1L, group = sex, colour = sex)) +
+  ##geom_point() +
+  ##geom_smooth(method = lm) +
+  ##ylab("log2 tarsus length")
+
+##ggplot(data = Dprol_wing_body, mapping = aes(log2thoraxL, log2tibL, group = sex, colour = sex)) +
+  ##geom_point() +
+  ##geom_smooth(method = lm) +
+  ##ylab("log2 tibia length")
+
+##ggplot(data = Dprol_wing_body, mapping = aes(log2thoraxL, log2tibW, group = sex, colour = sex)) +
+  ##geom_point() +
+  ##geom_smooth(method = lm) +
+  ##ylab("log2 tibia width")
+
+cor(Dprol_wing_body[Dprol_wing_body$sex == "M", 14:18])
+cor(Dprol_wing_body[Dprol_wing_body$sex == "F", 14:18])
+pairs(Dprol_wing_body[,14:18])
+scatterPlotMatrix( ~ log2tibL + log2tibW + log2tar1L + log2thoraxL + log2wing_area|sex,
+                   data + Dprol_wing_body)
