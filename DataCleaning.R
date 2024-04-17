@@ -38,3 +38,22 @@ Dprol_NoCondition <- Dprol_size[,-19]
 Dprol_male <- Dprol_NoCondition[Dprol_NoCondition$sex == "M",8:20,]
 Dprol_female <- Dprol_NoCondition[Dprol_NoCondition$sex == "F",8:20,]
 
+#Converting to a long data set 
+
+Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
+
+#log2(Dprol_size$leg_tibL*1000)
+
+Dprol_trait_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
+Dprol_trait_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
+Dprol_trait_full$tar1L_log2 <- (log2((Dprol_trait_full[,"leg_tar1L"])*1000))
+Dprol_trait_full$thoraxl_log2 <- (log2((Dprol_trait_full[,"thorax_length_mm"])*1000))
+
+Dprol_long <- (Dprol_trait_full[,5:13] 
+               %>% gather(trait,value, c(tibL_log2 , tibW_log2, tar1L_log2, thoraxl_log2))
+)
+
+head(Dprol_long)
+str(Dprol_long)
+
+saveRDS(Dprol_long, "Dprol_long.rds")
