@@ -33,5 +33,7 @@ Tried to fit a multivariate mixed effects linear model looking at the effect of 
 
 Used blmer to run the same model. Diagnostics look mostly ok. Normality of residuals is giving a weird results. 
 
+Generated a QQ plot using the lattice package. Nomality of residuals looks ok. 
+
 
 
