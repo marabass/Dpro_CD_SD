@@ -5,6 +5,7 @@ library(performance)
 library(tidyverse)
 library(emmeans)
 library(dotwhisker)
+library(lattice)
 
 #dataset
 Dprol_long <- readRDS("Dprol_long.rds")
@@ -15,7 +16,11 @@ blmm1 <- blmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = 
 #Diagnostics
 class(blmm1) <- "merMod" #diagnostics using the preformance package 
 check_model(blmm1)
-lattice::qqmath(blmm1) #QQ plot using Lattice package 
+qqmath(blmm1) #QQ plot using Lattice package 
+library(DHARMa)
+
+Diagnostic_blmm1 <- simulateResiduals(blmm1)
+plot(Diagnostic_blmm1)
 
 summary(blmm1)
 
