@@ -19,3 +19,8 @@ To test the hypothesis that traits that are more sexually dimorphic are also mor
 **BMB**: see comments above about allometric coefficients as "relative size". Also: when you say "block number will be added as a random effect", it's clear that the block number is a *grouping variable*.  What will be allowed to vary among blocks? (Intercept only, or other traits/interactions as well?)
 
 Pesevski, M. (2021). Influence of environmental variation on sexual dimorphism in Drosophila morphology among adaptively diverged populations and in an inter-specific comparative context .
+
+
+***Where everything is located***
+
+The original data set "MP_SpeciesStarvation_Clean.csv" is located in the main Dpro_CD_SD repository
