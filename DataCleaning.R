@@ -1,59 +1,54 @@
 library(tidyverse)
-library(readr)
 
-#load in the data 
-DmelFull_size <- read.csv("MP_SpeciesStarvation_Clean.csv")
+#Load in the data 
+DmelFull_size <- read_csv("MP_SpeciesStarvation_Clean.csv")
+str(DmelFull_size)
+names(DmelFull_size) #Variable names
+DmelFull_size$species_full # To identify naming convention for species 
 
 #extracting D prol data 
 Dprol_size <- DmelFull_size[DmelFull_size$species_full == "D_prolongata",]
-Dmel_size <- DmelFull_size[DmelFull_size$species_full == "D_melanogaster",]
-melprol_size <- rbind(Dprol_size, Dmel_size)
-
-
-#will need to convert character vectors to factors - Should probably have another script that does this (i.e., data clean up)
-Dprol_size$sex <- as.factor(Dprol_size$sex)
-Dprol_size$condition <- as.factor(Dprol_size$condition)
-Dprol_size$block <- as.factor(Dprol_size$block)
-Dprol_size$cohort  <- as.factor(Dprol_size$cohort)
 str(Dprol_size)
 
-Dmel_size$sex <- as.factor(Dmel_size$sex)
-Dmel_size$condition <- as.factor(Dmel_size$condition)
-Dmel_size$block <- as.factor(Dmel_size$block)
-Dmel_size$cohort  <- as.factor(Dmel_size$cohort)
-str(Dmel_size)
+sum(is.na(Dprol_size)) #No missing values 
+identical(Dprol_size$cohort_num, Dprol_size$cohort)#cohort_num and cohort are identical
 
-melprol_size$sex <- as.factor(melprol_size$sex)
-melprol_size$condition <- as.factor(melprol_size$condition)
-melprol_size$block <- as.factor(melprol_size$block)
-melprol_size$cohort  <- as.factor(melprol_size$cohort)
-str(melprol_size)
+#convert character vectors and cohort number into factors 
+Dprol_size <- (Dprol_size %>% mutate_if(is.character, as.factor) 
+               %>% mutate(cohort=as.factor(cohort))
+               )
+str(Dprol_size)
+levels(Dprol_size$sex)
 
-saveRDS(Dmel_size, "Dmel_size.rds")
-saveRDS(Dprol_size, "Dprol_size.rds")
-saveRDS(melprol_size, "melprol_size.rds")
+#Number of observations per sex and cohort/condition level
+print(Dprol_size %>% count(sex, condition))
 
-#separate trait values by sex
-Dprol_NoCondition <- Dprol_size[,-19]
-Dprol_male <- Dprol_NoCondition[Dprol_NoCondition$sex == "M",8:20,]
-Dprol_female <- Dprol_NoCondition[Dprol_NoCondition$sex == "F",8:20,]
+# Removing variables: transformed values, cohort_num
+Dprol_size_full <- select(Dprol_size, -leg_log_tibL, leg_log_tibW, -leg_log_tar1L, -thorax_log_length_mm, -wing_log_area_mm_sq, -wing_log_sqroot_area_mm_sq, -wing_sqroot_area_mm_sq,  -cohort_num)
+str(Dprol_size_full)
 
-#Converting to a long data set 
-
-Dprol_trait_full <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, cohort, sex, specimen, condition) 
+#For multivariate leg model: converting to long data frame
+Dprol_leg_full <- select(Dprol_size_full, -wing_area_mm_sq) 
 
 #log2(Dprol_size$leg_tibL*1000)
 
-Dprol_trait_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
-Dprol_trait_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
-Dprol_trait_full$tar1L_log2 <- (log2((Dprol_trait_full[,"leg_tar1L"])*1000))
-Dprol_trait_full$thoraxl_log2 <- (log2((Dprol_trait_full[,"thorax_length_mm"])*1000))
+Dprol_leg_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
+Dprol_leg_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
+Dprol_leg_full$tar1L_log2 <- (log2((Dprol_trait_full[,"leg_tar1L"])*1000))
+Dprol_leg_full$thoraxl_log2 <- (log2((Dprol_trait_full[,"thorax_length_mm"])*1000))
 
-Dprol_long <- (Dprol_trait_full[,5:13] 
+Dprol_long <- (Dprol_leg_full[,5:13] 
                %>% gather(trait,value, c(tibL_log2 , tibW_log2, tar1L_log2, thoraxl_log2))
 )
 
 head(Dprol_long)
 str(Dprol_long)
 
-saveRDS(Dprol_long, "Dprol_long.rds")
+#separate trait values by sex - Might take out, not sure we need this 
+Dprol_NoCondition <- Dprol_size[,-19]
+Dprol_male <- Dprol_NoCondition[Dprol_NoCondition$sex == "M",8:20,]
+Dprol_female <- Dprol_NoCondition[Dprol_NoCondition$sex == "F",8:20,]
+
+
+saveRDS(Dprol_size, "Dprol_size.rds") # full wide D. prolongata data frame
+saveRDS(Dprol_long, "Dprol_long.rds") # fill long D. prolongata data frame
