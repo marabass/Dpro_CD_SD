@@ -23,4 +23,6 @@ Pesevski, M. (2021). Influence of environmental variation on sexual dimorphism i
 
 ***Where everything is located***
 
-The original data set "MP_SpeciesStarvation_Clean.csv" is located in the main Dpro_CD_SD repository
+The original data set "MP_SpeciesStarvation_Clean.csv" is located in the main Dpro_CD_SD repository. 
+Data clean up and exploratory plots are in the script "DataCleaning.R" in the main repository 
+

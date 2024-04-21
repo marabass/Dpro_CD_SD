@@ -20,17 +20,46 @@ Dprol_size <- (Dprol_size %>% mutate_if(is.character, as.factor)
 str(Dprol_size)
 levels(Dprol_size$sex)
 
-#Number of observations per sex and cohort/condition level
+#Number of observations per sex and condition level
 print(Dprol_size %>% count(sex, condition))
 
-# Removing variables: transformed values, cohort_num
+#Removing variables: transformed values, cohort_num
 Dprol_size_full <- select(Dprol_size, -leg_log_tibL, leg_log_tibW, -leg_log_tar1L, -thorax_log_length_mm, -wing_log_area_mm_sq, -wing_log_sqroot_area_mm_sq, -wing_sqroot_area_mm_sq,  -cohort_num)
 str(Dprol_size_full)
 
-#For multivariate leg model: converting to long data frame
-Dprol_leg_full <- select(Dprol_size_full, -wing_area_mm_sq) 
+##Exploratory plots
 
-#log2(Dprol_size$leg_tibL*1000)
+#tibia length
+print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, leg_tibL, colour = sex)) + 
+  geom_point() +
+  facet_wrap(~condition) + 
+  ylab(" Log2 Tibia length (um)"))
+
+#tibia width
+print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, leg_tibW, colour = sex)) + 
+        geom_point() +
+        facet_wrap(~condition) + 
+        ylab("Tibia width (mm"))
+
+#tarsus length
+print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, leg_tar1L, colour = sex)) + 
+        geom_point() +
+        facet_wrap(~condition) + 
+        ylab("Tarsus length (mm"))
+#wing area 
+print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, wing_area_mm_sq, colour = sex)) + 
+        geom_point() +
+        facet_wrap(~condition) + 
+        ylab("√wing area"))
+
+
+#For multivariate leg model: converting to long data frame
+
+#Removing variables: transformed values, cohort_num, wing values
+Dprol_size_full <- select(Dprol_size, -leg_log_tibL, leg_log_tibW, -leg_log_tar1L, -thorax_log_length_mm, -wing_area_mm_sq, -wing_log_area_mm_sq, -wing_log_sqroot_area_mm_sq, -wing_sqroot_area_mm_sq,  -cohort_num)
+str(Dprol_size_full)
+
+#Converting leg measurements to micrometers, and log2 transforming
 
 Dprol_leg_full$tibL_log2 <- (log2((Dprol_trait_full[,"leg_tibL"])*1000))
 Dprol_leg_full$tibW_log2 <- (log2((Dprol_trait_full[,"leg_tibW"])*1000))
@@ -44,11 +73,6 @@ Dprol_long <- (Dprol_leg_full[,5:13]
 head(Dprol_long)
 str(Dprol_long)
 
-#separate trait values by sex - Might take out, not sure we need this 
-Dprol_NoCondition <- Dprol_size[,-19]
-Dprol_male <- Dprol_NoCondition[Dprol_NoCondition$sex == "M",8:20,]
-Dprol_female <- Dprol_NoCondition[Dprol_NoCondition$sex == "F",8:20,]
 
-
-saveRDS(Dprol_size, "Dprol_size.rds") # full wide D. prolongata data frame
-saveRDS(Dprol_long, "Dprol_long.rds") # fill long D. prolongata data frame
+saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data frame
+saveRDS(Dprol_long, "Dprol_long.rds") # long D. prolongata data frame - leg and thoraax measurements only
