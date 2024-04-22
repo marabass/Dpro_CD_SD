@@ -32,7 +32,6 @@ evaluating whether PC1 is an accurate reflection of size. The allometric coeffci
 Tried to fit a multivariate mixed effects linear model looking at the effect of the interaction between sex and condition on leg traits using lmer: (value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long).  Model yields a singular fit.
 
 Used blmer to run the same model. Diagnostics look mostly ok. Normality of residuals is giving a weird results. 
-
 Generated a QQ plot using the lattice package. Nomality of residuals looks ok. 
 
 

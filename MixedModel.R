@@ -6,22 +6,32 @@ library(tidyverse)
 library(emmeans)
 library(dotwhisker)
 library(lattice)
+library(DHARMa)
 
-#dataset
+#load in long D.pro data set 
 Dprol_long <- readRDS("Dprol_long.rds")
+
+Dprol_long_dummy <- readRDS("Dprol_long_dummy.rds")
+head(Dprol_long_dummy)
+Dprol_long_dummy$units
 
 #linear mixed model
 blmm1 <- blmer(value ~ trait:(sex * condition) - 1 + (trait-1|specimen), data = Dprol_long)
+
+lmm_dummy <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|units), data = Dprol_long_dummy)
+
+lmm2_dummy <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|condition:specimen), data = Dprol_long_dummy)
+library(lme4)
 
 #Diagnostics
 class(blmm1) <- "merMod" #diagnostics using the preformance package 
 check_model(blmm1)
 qqmath(blmm1) #QQ plot using Lattice package 
-library(DHARMa)
-
 Diagnostic_blmm1 <- simulateResiduals(blmm1)
 plot(Diagnostic_blmm1)
 
+
+VarCorr(lmm2_dummy)
 summary(blmm1)
 
 #dw plot
