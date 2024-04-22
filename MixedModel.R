@@ -7,12 +7,15 @@ library(emmeans)
 library(dotwhisker)
 library(lattice)
 library(DHARMa)
+library(lme4)
+library(car)
 
 #load in long D.pro data set 
 Dprol_long <- readRDS("Dprol_long.rds")
 
 Dprol_long_dummy <- readRDS("Dprol_long_dummy.rds")
 head(Dprol_long_dummy)
+str(Dprol_long_dummy)
 Dprol_long_dummy$units
 
 #linear mixed model
@@ -48,16 +51,30 @@ lmm_dummy <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|units), data = 
                                         check.nobs.vs.nlev="ignore",
                                         check.nobs.vs.nRE="ignore"))
 
+isSingular(lmm_dummy) # with a higher threshold for random effects variance. The model does not return a singular fit 
+all(abs(getME(lmm_dummy,"theta"))>1e-4) #Note: 'theta' is the VCV parameters
+
+
 varcovR<- VarCorr(lmm_dummy) #random effects variance covariance matrix
-summary(lmm_dummy)
-fixef(lmm_dummy) #fixed effect coefficients 
 
 diag(varcovR$units) <- diag(varcovR$units)+sigma(lmm_dummy)^2
 corrplot.mixed(cov2cor(varcovR$units),upper="ellipse") #correlation within individuals is very high 
+VarCorr(varcovR$units)
+
+summary(lmm_dummy)
+coef(lmm_dummy) #indiv-level estimates
+confint(lmm_dummy) #confidence intervals 
+fixef(lmm_dummy) #fixed effect coefficients 
+ranef(lmm_dummy) #indiv deviations from pop mean
+#diagnostics and troubleshooting 
 
 diagnostic_Dummy <- DHARMa::simulateResiduals(lmm_dummy)
 plot(diagnostic_Dummy)
 performance::check_model(lmm_dummy)
+
+fit_opt <- allFit(lmm_dummy)
+glance(fit_opt)
+tidy(aa, conf.int = TRUE) %>% arrange(effect, term, estimate) 
 
 #coefficient plot 
 cc1 <- tidy(lmm_dummy,effect="fixed") %>%
@@ -66,6 +83,7 @@ cc1 <- tidy(lmm_dummy,effect="fixed") %>%
 dwplot(cc1)+facet_wrap(~fixeff,scale="free",ncol=2)+
   geom_vline(xintercept=0,lty=2)
 
+dwplot(lmm_dummy)
 #emmeans
 all_traits_ssd <- emmeans(lmm_dummy,  pairwise ~ sex*condition*trait)
 all_traits_ssd_contrasts <- contrast(all_traits_ssd[[1]], 
