@@ -17,14 +17,53 @@ head(Dprol_long_dummy)
 str(Dprol_long_dummy)
 Dprol_long_dummy$units
 
+#load in the wide D.pro data set 
+Dpro_wide <- readRDS("Dprol_size.rds")
+str(Dpro_wide)
+
+#lm - 
+
+lm_multi <- lm(cbind(leg_log_tibL, leg_log_tibW, leg_log_tar1L,  thorax_log_length_mm) ~ sex*condition,
+               data = Dpro_wide)
+
+coefLM <- coef(lm_multi)
+confintLM <- confint(lm_multi)
+
+#coefplot::coefplot(lm_multi)
+dwlm <- tidy(lm_multi, conf.int = TRUE) 
+
+dwplot(dwlm) + facet_wrap(~term, scale="free",ncol=3)+
+  geom_vline(xintercept=0,lty=2)
+
+dwlm  %>%
+  filter(term != "(Intercept)") %>%
+  # reorder the coefficients so that the largest is at the top of the plot
+  mutate(term = fct_reorder(term, estimate)) %>%
+  ggplot(aes(estimate, term)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
+  # add in a dotted line at zero
+  facet_wrap(~response, scale="free",ncol=2) +
+  geom_vline(xintercept=0,lty=2)
+  
+
 #lmer - random effects units 
-lmm_dummy <- lmer(value ~ trait:(sex * condition) - 1 + (trait-1|units), data = Dprol_long_dummy, 
+
+Dprol_long_dummy$trait <- as.factor(Dprol_long_dummy$trait)
+levels(Dprol_long_dummy$trait)
+
+lmm_dummy <- lmer(value ~ trait:(1 + condition + sex + condition:sex) - 1 + (trait-1|units), data = Dprol_long_dummy, 
                   control = lmerControl(optCtrl=list(ftol_abs=1e-8),
                                         check.nobs.vs.nlev="ignore",
                                         check.nobs.vs.nRE="ignore"))
 
 isSingular(lmm_dummy) # with a higher threshold for random effects variance. The model does not return a singular fit 
 all(abs(getME(lmm_dummy,"theta"))>1e-4) #Note: 'theta' is the VCV parameters
+
+checkModelFits <- allFit(lmm_dummy)
+
+glance(checkModelFits)
+summary(checkModelFits)
 
 
 varcovR<- VarCorr(lmm_dummy) #random effects variance covariance matrix
