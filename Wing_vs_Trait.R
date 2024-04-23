@@ -10,8 +10,6 @@ library(emmeans)
 library(corrplot)
 library(scatterPlotMatrix)
 
-install.packages("scatterPlotMatrix")
-
 Dprol_size <- readRDS("Dprol_size.rds")
 
 Dprol_size$sex <- as.factor(Dprol_size$sex)
