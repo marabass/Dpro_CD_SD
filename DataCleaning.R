@@ -54,11 +54,11 @@ print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, wing_area_mm_sq,
 
 #covariance among traits
 
-cov(Dprol_size_full[Dprol_size_full$sex == "M",8:12]) #variance covariance matrix 
-cov(Dprol_size_full[Dprol_size_full$sex == "F",8:12])
+cov(Dprol_size[Dprol_size$sex == "M",8:12]) #variance covariance matrix 
+cov(Dprol_size[Dprol_size$sex == "F",8:12])
 
-pairs( Dprol_size_full[Dprol_size_full$sex == "M",8:12])
-pairs( Dprol_size_full[Dprol_size_full$sex == "F",8:12])
+pairs( Dprol_size[Dprol_size$sex == "M",8:12])
+pairs( Dprol_size[Dprol_size$sex == "F",8:12])
 
 #For multivariate leg model: converting data frame to long format
 
@@ -95,7 +95,14 @@ Dprol_long_dummy$units
 head(Dprol_long)
 str(Dprol_long)
 
+#Creating data frame for condition dependence comparison between sexually dimorphic (legs) and non-sexually dimorphic (wings)
+Dprol_wing_leg <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, wing_area_mm_sq, wing_log_area_mm_sq, wing_log_sqroot_area_mm_sq, species_full, cohort, sex, specimen, condition)
 
 saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data frame
 saveRDS(Dprol_long, "Dprol_long.rds") # long D. prolongata data frame - leg and thorax measurements only
 saveRDS(Dprol_long_dummy, "Dprol_long_dummy.rds")
+saveRDS(Dprol_wing_leg, "Dprol_wing_leg.rds") #D. prolongata data frame - leg, thorax, and wing measurements
+
+
+
+
