@@ -63,6 +63,8 @@ FE_coef <- fixef(lmm_dummy) #fixed effect coefficients
 ranef(lmm_dummy) #indiv deviations from pop mean
 
 #coefficient plot 
+
+#labelling for plots 
 dwlmm <- tidy(lmm_dummy,effect="fixed") %>%
   separate(term, into = c("trait","fixeff"), sep = ":", extra = "merge", remove = FALSE) 
 
@@ -70,29 +72,23 @@ dwplot(dwlmm)+facet_wrap(~fixeff,scale="free",ncol=2)+
   geom_vline(xintercept=0,lty=2)
 
 #emmeans
-
-all_traits_vals <- emmeans(lmm_dummy, specs = ~ sex | condition + trait)
-
+custom_labels <- as_labeller(function(x){
+  return(paste0(c("Tibia Length", "Tibia Width", "Tarsus Length", "Thorax Length")))
+})
 
 all_traits_ssd <- emmeans(lmm_dummy,  pairwise ~ sex*condition*trait)
-all_traits_sex <- emmeans(lmm_dummy,  condition ~ sex  + trait, by = "sex")
-
-contrast(all_traits_sex, "trt.vs.ctrl")
 
 all_traits_ssd_contrasts <- contrast(all_traits_ssd[[1]], 
                                      interaction = c(condition = "pairwise", sex = "pairwise"),
                                      by = "trait")
 
-all_traits_sex_contrasts <- contrast(all_traits_ssd[[1]], method = (condition = "pairwise"),  by = c("trait", "sex"))
-
 all_traits_ssd_contrasts
-all_traits_sex_contrasts
-
 confint(all_traits_ssd_contrasts)
 
 plot(all_traits_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
   labs(x = "log2 change in SSD at HC vs LC", y = "comparison") +
+  facet_wrap(~ trait, labeller = custom_labels, ncol = 1, strip.position = "right")
   theme_bw()
 
 
@@ -101,7 +97,7 @@ lm_multi <- lm(cbind(leg_tibL, leg_tibW , leg_tar1L,  thorax_length_mm) ~ sex*co
                data = Dprol_wide_dummy)
 
 influencePlot(lm_multi)
-
+car::lrPlot(lm_multi) #Not working 
 
 summary(manova(lm_multi))
 coefLM <- coef(lm_multi)
@@ -115,31 +111,31 @@ dwlm  %>%
   ggplot(aes(estimate, term)) +
   geom_point() +
   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
-  facet_wrap(~response, scale="free",ncol=2) +
+  facet_wrap(~response,labeller = custom_labels, scale="free",ncol=2) +
   geom_vline(xintercept=0,lty=2) + 
   xlab("Effect size") + 
   ylab("Treatment")
 
-blah <- emmeans(lm_multi, specs = ~ condition | rep.meas + sex )
+multLM_SSD <- emmeans(lm_multi, specs = ~ condition | sex + rep.meas)
 
-contrast(blah, "pairwise")
-
-all_traits_ssd_contrasts <- contrast(blah, 
+LM_ssd_contrasts <- contrast(multLM_SSD, 
                                      interaction = c(condition = "pairwise", sex = "pairwise"),
                                      by = "rep.meas")
 
-all_traits_CD_contrasts <- contrast(blah, 
+LM_CD_contrasts <- contrast(multLM_SSD, 
                                      method = "pairwise",
                                      by = c("rep.meas", "sex"))
-plot(all_traits_ssd_contrasts) + 
+
+plot(LM_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
-  labs(x = "log2 change in SSD at HC vs LC", y = "comparison") +
+  labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
+  facet_wrap(~ rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
   theme_bw() 
 
-plot(all_traits_CD_contrasts) + 
+plot(LM_CD_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
-  labs(x = "log2 change in SSD at HC vs LC", y = "comparison") +
-  #facet_grid(vars(sex), vars(rep.meas)) + 
+  labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
+  facet_wrap(~rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
   theme_bw()
 
 ##MODEL FOR WING AND LEG COMPARISON
