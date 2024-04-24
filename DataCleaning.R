@@ -58,12 +58,10 @@ print(ggplot(data = Dprol_size, mapping = aes(thorax_length_mm, wing_area_mm_sq,
 cov(Dprol_size[Dprol_size$sex == "M",c(8:10, 15)]) #variance covariance matrix 
 cov(Dprol_size[Dprol_size$sex == "F",c(8:10, 15)])
 
-<<<<<<< HEAD
 pairs( Dprol_size[Dprol_size$sex == "M",c(8:10, 15)])
 pairs( Dprol_size[Dprol_size$sex == "F",c(8:10, 15)])
 
-=======
->>>>>>> 4b26b0949cddc728c73110082a1a8f265c3eb183
+
 
 #For multivariate leg model: converting data frame to long format
 
@@ -100,13 +98,10 @@ pairs( Dprol_size[Dprol_size$sex == "F",c(8:10, 15)])
 
 #leg and body size wide 
 Dprol_wide_dummy <- (Dprol_size
-                     %>%select(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, sex, specimen, condition)
-                     %>% mutate_if(is.character, as.factor))
-
-Dprol_wide_dummy$tibL_log2 <- (log2((Dprol_wide_dummy[,"leg_tibL"])*1000))
-Dprol_wide_dummy$tibWL_log2<- (log2((Dprol_wide_dummy[,"leg_tibW"])*1000))
-Dprol_wide_dummy$tar1L_log2 <- (log2((Dprol_wide_dummy[,"leg_tar1L"])*1000))
-Dprol_wide_dummy$thoraxl_log2 <- (log2((Dprol_wide_dummy[,"thorax_length_mm"])*1000))
+                     %>%select(leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, species_full, sex, condition)
+                     %>% mutate_if(is.character, as.factor)
+                     %>% mutate_if(is.double, (~.* 1000), round, 4)
+                     %>% mutate_if(is.double, log2))
 
 head(Dprol_wide_dummy)
 print(Dprol_wide_dummy %>% count(sex, condition))
@@ -133,14 +128,11 @@ Dprol_wing_leg$tar1L_log2 <- (log2((Dprol_wing_leg[,"leg_tar1L"])*1000))
 Dprol_wing_leg$thoraxl_log2 <- (log2((Dprol_wing_leg[,"thorax_length_mm"])*1000))
 Dprol_wing_leg$wing_area_mcm_sq <- ((Dprol_wing_leg[,"wing_area_mm_sq"])*1000000)
 
-<<<<<<< HEAD
+
 saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data 
 saveRDS(Dprol_long_dummy, "Dprol_long_dummy.rds") # long D. prolongata data frame - leg and thorax measurements only
 saveRDS(Dprol_wide_dummy, "Dprol_wide_dummy.rds") #wide D. prolongata data frame - leg and thorax measurements only 
-=======
 saveRDS(Dprol_wing_leg, "Dprol_wing_leg.rds") #D. prolongata data frame - leg, thorax, and wing measurements
 
 
 
-
->>>>>>> 4b26b0949cddc728c73110082a1a8f265c3eb183
