@@ -9,6 +9,9 @@ library(DHARMa)
 library(lme4)
 library(broom.mixed)
 library(mvinfluence)
+library(dfoptim)
+library(optimx)
+
 
 #load in long D.pro long data set 
 Dprol_long_dummy <- readRDS("Dprol_long_dummy.rds")
