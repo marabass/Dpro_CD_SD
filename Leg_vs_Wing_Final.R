@@ -41,6 +41,10 @@ theme(text = element_text(size = 10),
 strip.text.y.right = element_text(angle = 0))
 #this is just visual stuff that can be fixed later
 
+custom_labels1 <- as_labeller(function(x){
+  return(paste0(c("Tarsus Length", "Tibia Length", "Tibia Width", "Thorax Length", "Wing Area")))
+}) ##Trait labels for plots 
+
 plot(comparison,
      xlab = "model estimates, trait measurements, log2 transformed") + rot_strips
 
@@ -72,6 +76,7 @@ comparison_contrasts_ratios <- contrast(comparison,
 
 plot(comparison_contrasts_ratios) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
-  labs(x = "change in SSD at HC and LC (log2)", y = "comparison") +
+  labs(x = "log2 change in SSD at HC and LC", y = "comparison") +
+  facet_wrap(~ rep.meas, labeller = custom_labels1, ncol = 1, strip.position = "right")
   theme_bw() + theme(text = element_text(size = 16)) +
   rot_strips
