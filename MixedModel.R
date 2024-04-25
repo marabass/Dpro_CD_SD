@@ -8,6 +8,10 @@ library(lattice)
 library(DHARMa)
 library(lme4)
 library(broom.mixed)
+library(mvinfluence)
+library(dfoptim) #delete if not needed anymore for current models
+library(optimx) #delete if not needed anymore for current models
+
 
 #load in long D.pro long data set 
 Dprol_long_dummy <- readRDS("Dprol_long_dummy.rds")
@@ -24,13 +28,13 @@ str(Dprol_wide_dummy)
 Dprol_long_dummy$trait <- as.factor(Dprol_long_dummy$trait)
 levels(Dprol_long_dummy$trait)
 
-lmm_dummy <- lmer(value ~ trait:(1 + sex*condition) - 1 + (trait-1|units), data = Dprol_long_dummy, 
+lmm_dummy <- lmer(value ~ trait:(sex + condition)^2 - 1 + (trait-1|units), data = Dprol_long_dummy, REML = FALSE,
                   control = lmerControl(optCtrl=list(ftol_abs=1e-8),
                                         check.nobs.vs.nlev="ignore",
                                         check.nobs.vs.nRE="ignore"))
 
 isSingular(lmm_dummy) # with a higher threshold for random effects variance. The model does not return a singular fit 
-all(abs(getME(lmm_dummy,"theta"))>1e-4) #Note: 'theta' is the VCV parameter
+all(abs(getME(lmm_dummy,"theta"))>1e-4) #Note: 'theta' is the VCV parameter for the random effects variable 
 
 #diagnostics and troubleshooting 
 
@@ -47,10 +51,10 @@ tidy(fit_opt, conf.int = TRUE) %>% arrange(effect, term, estimate)
 
 #parameter estimates 
 
-varcovR<- VarCorr(lmm_dummy) #random effects variance covariance matrix
-diag(varcovR$units) <- diag(varcovR$units)+sigma(lmm_dummy)^2
-corrplot.mixed(cov2cor(varcovR$units),upper="ellipse") #correlation within individuals is very high 
-VarCorr(varcovR$units)
+#varcovR<- VarCorr(lmm_dummy) #random effects variance covariance matrix
+#diag(varcovR$units) <- diag(varcovR$units)+sigma(lmm_dummy)^2
+#corrplot.mixed(cov2cor(varcovR$units),upper="ellipse") #correlation within individuals is very high 
+#VarCorr(varcovR$units)
 
 summary(lmm_dummy)
 RE_coefficients <- coef(lmm_dummy) #indiv-level estimates
@@ -59,6 +63,8 @@ FE_coef <- fixef(lmm_dummy) #fixed effect coefficients
 ranef(lmm_dummy) #indiv deviations from pop mean
 
 #coefficient plot 
+
+#labelling for plots 
 dwlmm <- tidy(lmm_dummy,effect="fixed") %>%
   separate(term, into = c("trait","fixeff"), sep = ":", extra = "merge", remove = FALSE) 
 
@@ -66,16 +72,23 @@ dwplot(dwlmm)+facet_wrap(~fixeff,scale="free",ncol=2)+
   geom_vline(xintercept=0,lty=2)
 
 #emmeans
+custom_labels <- as_labeller(function(x){
+  return(paste0(c("Tibia Length", "Tibia Width", "Tarsus Length", "Thorax Length")))
+})
+
 all_traits_ssd <- emmeans(lmm_dummy,  pairwise ~ sex*condition*trait)
+
 all_traits_ssd_contrasts <- contrast(all_traits_ssd[[1]], 
-                                     interaction = c(condtion = "pairwise", sex = "pairwise"),
+                                     interaction = c(condition = "pairwise", sex = "pairwise"),
                                      by = "trait")
+
 all_traits_ssd_contrasts
 confint(all_traits_ssd_contrasts)
 
 plot(all_traits_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
   labs(x = "log2 change in SSD at HC vs LC", y = "comparison") +
+  facet_wrap(~ trait, labeller = custom_labels, ncol = 1, strip.position = "right")
   theme_bw()
 
 
@@ -83,7 +96,10 @@ plot(all_traits_ssd_contrasts) +
 lm_multi <- lm(cbind(leg_tibL, leg_tibW , leg_tar1L,  thorax_length_mm) ~ sex*condition,
                data = Dprol_wide_dummy)
 
-summary(lm_multi)
+influencePlot(lm_multi)
+car::lrPlot(lm_multi) #Not working 
+
+summary(manova(lm_multi))
 coefLM <- coef(lm_multi)
 confintLM <- confint(lm_multi)
 
@@ -91,7 +107,58 @@ dwlm <- tidy(lm_multi, conf.int = TRUE)
 
 dwlm  %>%
   filter(term != "(Intercept)") %>%
-  mutate(term = fct_reorder(term, estimate)) %>%
+  #mutate(term = fct_reorder(term, estimate)) %>%
+  ggplot(aes(estimate, term)) +
+  geom_point() +
+  geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
+  facet_wrap(~response,labeller = custom_labels, scale="free",ncol=2) +
+  geom_vline(xintercept=0,lty=2) + 
+  xlab("Effect size") + 
+  ylab("Treatment")
+
+multLM_SSD <- emmeans(lm_multi, specs = ~ condition | sex + rep.meas)
+
+LM_ssd_contrasts <- contrast(multLM_SSD, 
+                                     interaction = c(condition = "pairwise", sex = "pairwise"),
+                                     by = "rep.meas")
+
+LM_CD_contrasts <- contrast(multLM_SSD, 
+                                     method = "pairwise",
+                                     by = c("rep.meas", "sex"))
+
+plot(LM_ssd_contrasts) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
+  facet_wrap(~ rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
+  theme_bw() 
+
+plot(LM_CD_contrasts) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
+  facet_wrap(~rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
+  theme_bw()
+
+##MODEL FOR WING AND LEG COMPARISON
+
+#Loading in data
+Dprol_leg_wing <- readRDS("Dprol_leg_wing.rds")
+
+#Fixed effects model
+lm_leg_wing <- lm(cbind(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq) ~ sex*condition,
+               data = Dprol_leg_wing)
+
+plot(lm_leg_wing)
+influencePlot(lm_leg_wing)
+summary(manova(lm_leg_wing))
+coefLM <- coef(lm_leg_wing)
+confintLM <- confint(lm_leg_wing)
+
+##I'm not sure what this is meant to show, but leaving it in so I have it if needed
+dw_wing <- tidy(lm_leg_wing, conf.int = TRUE)
+
+dw_wing  %>%
+  filter(term != "(Intercept)") %>%
+  #mutate(term = fct_reorder(term, estimate)) %>%
   ggplot(aes(estimate, term)) +
   geom_point() +
   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
@@ -99,3 +166,49 @@ dwlm  %>%
   geom_vline(xintercept=0,lty=2) + 
   xlab("Effect size") + 
   ylab("Treatment")
+
+comparison <- emmeans(lm_leg_wing, specs = ~ condition | rep.meas + sex)
+
+#rot_strips <-   theme_bw() +
+  #theme(text = element_text(size = 16),
+        #strip.text.y.right = element_text(angle = 0))
+#this is just visual stuff that can be fixed later
+
+plot(comparison,
+     xlab = "model estimates, trait measurements, log2 transformed")
+
+#not going to keep things pairwise, pairwise is just placeholder for right now
+contrast(comparison, "pairwise")
+
+leg_wing_ssd_contrasts <- contrast(comparison, 
+                                     interaction = c(condition = "pairwise", sex = "pairwise"),
+                                     by = "rep.meas")
+leg_wing_ssd_contrasts
+
+leg_wing_CD_contrasts <- contrast(comparison, 
+                                    method = "pairwise",
+                                    by = c("rep.meas", "sex"))
+
+leg_wing_CD_contrasts
+
+confint(leg_wing_ssd_contrasts)
+
+plot(leg_wing_ssd_contrasts) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "change in SSD at HC and LC (log2)", y = "comparison") +
+  theme_bw() + theme(text = element_text(size = 16))
+
+#non-pairwise stuff
+comparison_contrasts_ratios <- contrast(comparison, 
+                                        interaction = c(condition = "eff", sex = "pairwise"),
+                                        by = "rep.meas",type = "response")
+
+rot_strips <-   theme_bw() +
+  theme(text = element_text(size = 12),
+        strip.text.y.right = element_text(angle = 0))
+
+plot(comparison_contrasts_ratios) + 
+  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
+  labs(x = "change in SSD at HC and LC (log2)", y = "comparison") +
+  theme_bw() + theme(text = element_text(size = 16)) +
+  rot_strips
