@@ -1,5 +1,12 @@
 ##MODEL FOR WING AND LEG COMPARISON
 
+library(performance)
+library(tidyverse)
+library(emmeans)
+library(dotwhisker)
+library(lme4)
+library(mvinfluence)
+
 #Loading in data
 Dprol_leg_wing <- readRDS("Dprol_leg_wing.rds")
 
@@ -7,11 +14,11 @@ Dprol_leg_wing <- readRDS("Dprol_leg_wing.rds")
 lm_leg_wing <- lm(cbind(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq) ~ sex*condition,
                   data = Dprol_leg_wing)
 
-plot(lm_leg_wing)
+qqmath(lm_leg_wing)
 influencePlot(lm_leg_wing)
 summary(manova(lm_leg_wing))
-coefLM <- coef(lm_leg_wing)
-confintLM <- confint(lm_leg_wing)
+coef_leg_wing <- coef(lm_leg_wing)
+confint_leg_wing <- confint(lm_leg_wing)
 
 ##I'm not sure what this is meant to show, but leaving it in so I have it if needed
 dw_wing <- tidy(lm_leg_wing, conf.int = TRUE)
@@ -29,13 +36,13 @@ dw_wing  %>%
 
 comparison <- emmeans(lm_leg_wing, specs = ~ condition | rep.meas + sex)
 
-#rot_strips <-   theme_bw() +
-#theme(text = element_text(size = 16),
-#strip.text.y.right = element_text(angle = 0))
+rot_strips <-   theme_bw() +
+theme(text = element_text(size = 10),
+strip.text.y.right = element_text(angle = 0))
 #this is just visual stuff that can be fixed later
 
 plot(comparison,
-     xlab = "model estimates, trait measurements, log2 transformed")
+     xlab = "model estimates, trait measurements, log2 transformed") + rot_strips
 
 #not going to keep things pairwise, pairwise is just placeholder for right now
 contrast(comparison, "pairwise")
@@ -62,10 +69,6 @@ plot(leg_wing_ssd_contrasts) +
 comparison_contrasts_ratios <- contrast(comparison, 
                                         interaction = c(condition = "eff", sex = "pairwise"),
                                         by = "rep.meas",type = "response")
-
-rot_strips <-   theme_bw() +
-  theme(text = element_text(size = 12),
-        strip.text.y.right = element_text(angle = 0))
 
 plot(comparison_contrasts_ratios) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
