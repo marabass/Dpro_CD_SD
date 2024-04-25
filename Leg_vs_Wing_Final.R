@@ -14,7 +14,8 @@ Dprol_leg_wing <- readRDS("Dprol_wing.rds")
 lm_leg_wing <- lm(cbind(leg_tibL, leg_tibW, leg_tar1L, thorax_length_µm, wing_area_µm_sq) ~ sex*condition,
                   data = Dprol_leg_wing)
 
-#diagnostics
+#diagnostic
+qqnorm(residuals(lm_leg_wing))
 qqline(residuals(lm_leg_wing))
 
 summary(lm_leg_wing)
