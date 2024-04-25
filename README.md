@@ -9,4 +9,4 @@ Multivariate Mixed effects model using lmer and the multivariate fixed effect on
 
 The multivariate fixed effects model using lm for the comparison of leg traits and wing area is located in the script "Leg_vs_Wing_Final.R" in the main repository. All analyses discussed in the write-up are included in this script. It uses the Dprol_wing.rds file generated in the "DataCleaning.R" script.
 
-Our final write-up  'Abass_VanBakel_708_FinalPaper' is located in the main rep directory. 
+Our final write-up  'Abass_VanBakel_708_FinalPaper' is located in the main repository. 
