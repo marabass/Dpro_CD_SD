@@ -14,6 +14,9 @@ Dprol_leg_wing <- readRDS("Dprol_wing.rds")
 lm_leg_wing <- lm(cbind(leg_tibL, leg_tibW, leg_tar1L, thorax_length_µm, wing_area_µm_sq) ~ sex*condition,
                   data = Dprol_leg_wing)
 
+#diagnostics
+qqline(residuals(lm_leg_wing))
+
 summary(lm_leg_wing)
 influencePlot(lm_leg_wing)
 summary(manova(lm_leg_wing))
@@ -55,3 +58,4 @@ plot(comparison_contrasts_ratios) +
   facet_wrap(~ rep.meas, labeller = custom_labels1, ncol = 1, strip.position = "right")
   theme_bw() + theme(text = element_text(size = 16)) +
   rot_strips
+  
