@@ -119,20 +119,25 @@ head(Dprol_long_dummy)
 head(Dprol_long_dummy$units)
 
 #Creating data frame for condition dependence comparison between sexually dimorphic (legs) and non-sexually dimorphic (wings)
-Dprol_wing_leg <- select(Dprol_size, leg_tibL, leg_tibW, leg_tar1L, thorax_length_mm, wing_area_mm_sq, wing_log_area_mm_sq, wing_log_sqroot_area_mm_sq, species_full, cohort, sex, specimen, condition)
+Dprol_wing_leg <- (Dprol_size
+                   %>%select(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq, species_full, sex, specimen, condition)
+                   %>%mutate_if(is.character, as.factor)
+                   %>%mutate(units=factor(1:n()))
+                   %>%gather(trait,value,c(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq))
+)
 
-#Converting length and area measurements to micrometers and log2 transforming
-Dprol_wing_leg$tibL_log2 <- (log2((Dprol_wing_leg[,"leg_tibL"])*1000))
-Dprol_wing_leg$tibW_log2 <- (log2((Dprol_wing_leg[,"leg_tibW"])*1000))
-Dprol_wing_leg$tar1L_log2 <- (log2((Dprol_wing_leg[,"leg_tar1L"])*1000))
-Dprol_wing_leg$thoraxl_log2 <- (log2((Dprol_wing_leg[,"thorax_length_mm"])*1000))
-Dprol_wing_leg$wing_area_mcm_sq <- ((Dprol_wing_leg[,"wing_area_mm_sq"])*1000000)
+Dprol_leg_wing <- (Dprol_size
+                     %>%select(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq, species_full, sex, condition)
+                     %>% mutate_if(is.character, as.factor))
+
+head(Dprol_leg_wing)
+print(Dprol_leg_wing %>% count(sex, condition))
 
 
 saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data 
 saveRDS(Dprol_long_dummy, "Dprol_long_dummy.rds") # long D. prolongata data frame - leg and thorax measurements only
 saveRDS(Dprol_wide_dummy, "Dprol_wide_dummy.rds") #wide D. prolongata data frame - leg and thorax measurements only 
-saveRDS(Dprol_wing_leg, "Dprol_wing_leg.rds") #D. prolongata data frame - leg, thorax, and wing measurements
-
+saveRDS(Dprol_wing_leg, "Dprol_wing_leg.rds") #D. prolongata data frame (for lmer) - log transformed leg, thorax, and wing measurements
+saveRDS(Dprol_leg_wing, "Dprol_leg_wing.rds") #D. prolongata data frame (for lm) - log transformed leg, thorax, and wing measurements
 
 

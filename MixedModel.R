@@ -9,8 +9,13 @@ library(DHARMa)
 library(lme4)
 library(broom.mixed)
 library(mvinfluence)
+<<<<<<< HEAD
 #library(dfoptim)
 #library(optimx)
+=======
+library(dfoptim) #delete if not needed anymore for current models
+library(optimx) #delete if not needed anymore for current models
+>>>>>>> feb21e4c6e53d87d05885d6f365d571a0bb1c726
 
 
 #load in long D.pro long data set 
