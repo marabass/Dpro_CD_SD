@@ -8,13 +8,13 @@ library(lme4)
 library(mvinfluence)
 
 #Loading in data
-Dprol_leg_wing <- readRDS("Dprol_leg_wing.rds")
+Dprol_leg_wing <- readRDS("Dprol_wing.rds")
 
 #Fixed effects model
-lm_leg_wing <- lm(cbind(leg_log_tibL, leg_log_tibW, leg_log_tar1L, thorax_log_length_mm, wing_log_area_mm_sq) ~ sex*condition,
+lm_leg_wing <- lm(cbind(leg_tibL, leg_tibW, leg_tar1L, thorax_length_µm, wing_area_µm_sq) ~ sex*condition,
                   data = Dprol_leg_wing)
 
-qqmath(lm_leg_wing)
+summary(lm_leg_wing)
 influencePlot(lm_leg_wing)
 summary(manova(lm_leg_wing))
 coef_leg_wing <- coef(lm_leg_wing)
