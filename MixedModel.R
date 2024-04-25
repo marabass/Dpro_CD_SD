@@ -9,8 +9,8 @@ library(DHARMa)
 library(lme4)
 library(broom.mixed)
 library(mvinfluence)
-library(dfoptim)
-library(optimx)
+#library(dfoptim)
+#library(optimx)
 
 
 #load in long D.pro long data set 
@@ -28,7 +28,7 @@ str(Dprol_wide_dummy)
 Dprol_long_dummy$trait <- as.factor(Dprol_long_dummy$trait)
 levels(Dprol_long_dummy$trait)
 
-lmm_dummy <- lmer(value ~ trait:(sex + condition)^2 - 1 + (trait-1|units), data = Dprol_long_dummy, REML = FALSE,
+lmm_dummy <- lmer(value ~ trait:(sex + condition) - 1 + (trait-1|units), data = Dprol_long_dummy, REML = FALSE,
                   control = lmerControl(optCtrl=list(ftol_abs=1e-8),
                                         check.nobs.vs.nlev="ignore",
                                         check.nobs.vs.nRE="ignore"))
@@ -38,11 +38,10 @@ all(abs(getME(lmm_dummy,"theta"))>1e-4) #Note: 'theta' is the VCV parameter for 
 
 #diagnostics and troubleshooting 
 
+check_model(lmm_dummy)
+check_normality(lmm_dummy)
 diagnostic_Dummy <- simulateResiduals(lmm_dummy)
 plot(diagnostic_Dummy)
-
-check_model(lmm_dummy)
-
 qqmath(lmm_dummy)
 
 fit_opt <- allFit(lmm_dummy)
@@ -51,12 +50,13 @@ tidy(fit_opt, conf.int = TRUE) %>% arrange(effect, term, estimate)
 
 #parameter estimates 
 
-#varcovR<- VarCorr(lmm_dummy) #random effects variance covariance matrix
-#diag(varcovR$units) <- diag(varcovR$units)+sigma(lmm_dummy)^2
-#corrplot.mixed(cov2cor(varcovR$units),upper="ellipse") #correlation within individuals is very high 
-#VarCorr(varcovR$units)
-
 summary(lmm_dummy)
+
+trait_means <- (Dprol_long_dummy %>% 
+                group_by(sex, trait) %>% 
+                summarize(mean_value = mean(value)))
+
+
 RE_coefficients <- coef(lmm_dummy) #indiv-level estimates
 dummy_CIs <- confint(lmm_dummy) #confidence intervals 
 FE_coef <- fixef(lmm_dummy) #fixed effect coefficients 
@@ -64,7 +64,6 @@ ranef(lmm_dummy) #indiv deviations from pop mean
 
 #coefficient plot 
 
-#labelling for plots 
 dwlmm <- tidy(lmm_dummy,effect="fixed") %>%
   separate(term, into = c("trait","fixeff"), sep = ":", extra = "merge", remove = FALSE) 
 
@@ -72,9 +71,9 @@ dwplot(dwlmm)+facet_wrap(~fixeff,scale="free",ncol=2)+
   geom_vline(xintercept=0,lty=2)
 
 #emmeans
-custom_labels <- as_labeller(function(x){
-  return(paste0(c("Tibia Length", "Tibia Width", "Tarsus Length", "Thorax Length")))
-})
+custom_labels1 <- as_labeller(function(x){
+  return(paste0(c("Tarsus Length", "Tibia Length", "Tibia Width", "Thorax Length")))
+}) ##Trait labels for plots 
 
 all_traits_ssd <- emmeans(lmm_dummy,  pairwise ~ sex*condition*trait)
 
@@ -88,7 +87,7 @@ confint(all_traits_ssd_contrasts)
 plot(all_traits_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
   labs(x = "log2 change in SSD at HC vs LC", y = "comparison") +
-  facet_wrap(~ trait, labeller = custom_labels, ncol = 1, strip.position = "right")
+  facet_wrap(~ trait, labeller = custom_labels1, ncol = 1, strip.position = "right")
   theme_bw()
 
 
@@ -126,14 +125,18 @@ LM_CD_contrasts <- contrast(multLM_SSD,
                                      method = "pairwise",
                                      by = c("rep.meas", "sex"))
 
+custom_labels2 <- as_labeller(function(x){
+  return(paste0(c("Tibia Length", "Tibia Width", "Tarsus Length", "Thorax Length")))
+}) ##Trait labels for plots 
+
 plot(LM_ssd_contrasts) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
   labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
-  facet_wrap(~ rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
+  facet_wrap(~ rep.meas, labeller = custom_labels2, ncol = 1, strip.position = "right") + 
   theme_bw() 
 
-plot(LM_CD_contrasts) + 
+plot(LM_CD_contrasts, ncol = 4) + 
   geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
-  labs(x = "log2 change in SSD at HC vs LC", y = "Comparison") +
-  facet_wrap(~rep.meas, labeller = custom_labels, ncol = 1, strip.position = "right") + 
+  labs(x = "Log2 change in size at HC vs LC", y = "Comparison") +
+  #facet_grid(sex ~ rep.meas, labeller = labeller(rep.meas = custom_labels)) + 
   theme_bw()
