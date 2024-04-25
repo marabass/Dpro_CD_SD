@@ -12,6 +12,7 @@ DmelFull_size$species_full # To identify naming convention for species
 #extracting D prol data 
 Dprol_size <- DmelFull_size[DmelFull_size$species_full == "D_prolongata",]
 str(Dprol_size)
+saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data 
 
 sum(is.na(Dprol_size)) #No missing values 
 identical(Dprol_size$cohort_num, Dprol_size$cohort)#cohort_num and cohort are identical
@@ -87,7 +88,7 @@ Dprol_leg_wing_mcm <- (Dprol_size
                      %>% mutate_if(is.double, log2))
 Dprol_leg_wing_mcm <- plyr::rename(Dprol_leg_wing_mcm, c("thorax_length_mm"="thorax_length_µm", "wing_area_mm_sq"="wing_area_µm_sq"))
 
-saveRDS(Dprol_size, "Dprol_size.rds") # full D. prolongata data 
+
 saveRDS(Dprol_long_dummy, "Dprol_long_dummy.rds") # long D. prolongata data frame - leg and thorax measurements only
 saveRDS(Dprol_wide_dummy, "Dprol_wide_dummy.rds") #wide D. prolongata data frame - leg and thorax measurements only 
 saveRDS(Dprol_leg_wing_mcm,"Dprol_wing.rds") #D. prolongata data frame for lm adjusted to micrometers and log transformed

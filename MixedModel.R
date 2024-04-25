@@ -108,7 +108,7 @@ dwlm  %>%
   ggplot(aes(estimate, term)) +
   geom_point() +
   geom_errorbarh(aes(xmin = conf.low, xmax = conf.high), height = .2) +
-  facet_wrap(~response,labeller = custom_labels, scale="free",ncol=2) +
+  facet_wrap(~response,labeller = custom_labels1, scale="free",ncol=2) +
   geom_vline(xintercept=0,lty=2) + 
   xlab("Effect size") + 
   ylab("Treatment")

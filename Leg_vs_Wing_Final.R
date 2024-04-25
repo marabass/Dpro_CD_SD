@@ -20,7 +20,6 @@ summary(manova(lm_leg_wing))
 coef_leg_wing <- coef(lm_leg_wing)
 confint_leg_wing <- confint(lm_leg_wing)
 
-##I'm not sure what this is meant to show, but leaving it in so I have it if needed
 dw_wing <- tidy(lm_leg_wing, conf.int = TRUE)
 
 dw_wing  %>%
@@ -44,30 +43,6 @@ strip.text.y.right = element_text(angle = 0))
 custom_labels1 <- as_labeller(function(x){
   return(paste0(c("Tarsus Length", "Tibia Length", "Tibia Width", "Thorax Length", "Wing Area")))
 }) ##Trait labels for plots 
-
-plot(comparison,
-     xlab = "model estimates, trait measurements, log2 transformed") + rot_strips
-
-#not going to keep things pairwise, pairwise is just placeholder for right now
-contrast(comparison, "pairwise")
-
-leg_wing_ssd_contrasts <- contrast(comparison, 
-                                   interaction = c(condition = "pairwise", sex = "pairwise"),
-                                   by = "rep.meas")
-leg_wing_ssd_contrasts
-
-leg_wing_CD_contrasts <- contrast(comparison, 
-                                  method = "pairwise",
-                                  by = c("rep.meas", "sex"))
-
-leg_wing_CD_contrasts
-
-confint(leg_wing_ssd_contrasts)
-
-plot(leg_wing_ssd_contrasts) + 
-  geom_vline(xintercept = 0, lty = 2, alpha = 0.5) + 
-  labs(x = "change in SSD at HC and LC (log2)", y = "comparison") +
-  theme_bw() + theme(text = element_text(size = 16))
 
 #non-pairwise stuff
 comparison_contrasts_ratios <- contrast(comparison, 
